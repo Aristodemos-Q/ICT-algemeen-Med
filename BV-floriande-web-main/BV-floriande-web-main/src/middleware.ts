@@ -12,8 +12,8 @@ export default async function middleware(request: NextRequest) {
   // Temporarily disable middleware to debug login flow
   return NextResponse.next();
   
-  // Check for Supabase session cookies
-  const sessionCookie = request.cookies.get('sb-cumsctqzjowisphyhnfj-auth-token') || 
+  // Check for Supabase session cookies  
+  const sessionCookie = request.cookies.get(`sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split('://')[1]?.split('.')[0]}-auth-token`) || 
                        request.cookies.get('supabase-auth-token') ||
                        request.cookies.get('sb-auth-token');
   

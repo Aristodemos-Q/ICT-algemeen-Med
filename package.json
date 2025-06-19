@@ -1,0 +1,14 @@
+{
+  "name": "medcheck-plus-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node start-medcheck.js",
+    "dev:ps": "powershell -File .\\start-dev.ps1",
+    "dev:bat": ".\\start-dev.bat",
+    "build": "cd BV-floriande-web-main/BV-floriande-web-main && npx next build", 
+    "start": "cd BV-floriande-web-main/BV-floriande-web-main && npx next start",
+    "lint": "cd BV-floriande-web-main/BV-floriande-web-main && npx next lint",
+    "migrate": "cd BV-floriande-web-main/BV-floriande-web-main && node medcheck-migration.mjs"
+  }
+}

@@ -2,7 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   experimental: {
-    // Optimize for better performance and error handling
     optimizeCss: true,
   },
   // Add headers to help with CORS and caching
@@ -25,11 +24,13 @@ const nextConfig = {
   // Add webpack configuration for better error handling
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {
-      // Add source maps for better debugging
-      config.devtool = 'cheap-module-source-map';
+      // We're leaving this commented out due to performance warning
+      // config.devtool = 'cheap-module-source-map';
     }
     return config;
   },
 };
+
+module.exports = nextConfig;
 
 module.exports = nextConfig;

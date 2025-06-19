@@ -1,24 +1,25 @@
 {
-  "name": "bv-floriande-web",
-  "version": "0.1.0",
+  "name": "medcheck-plus",
+  "version": "1.0.0",
   "private": true,
   "author": "qdela",
   "license": "UNLICENSED",
   "copyright": "© 2025 qdela. All rights reserved.",
-  "description": "BV Floriande Trainers Platform - Eigendom van qdela",
-  "homepage": "https://github.com/qdela/bv-floriande-web",
+  "description": "MedCheck+ Medical Practice Management System",
+  "homepage": "https://github.com/qdela/medcheck-plus",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/qdela/bv-floriande-web.git"
+    "url": "git+https://github.com/qdela/medcheck-plus.git"
   },
   "bugs": {
-    "url": "https://github.com/qdela/bv-floriande-web/issues"
+    "url": "https://github.com/qdela/medcheck-plus/issues"
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build", 
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate": "node medcheck-migration.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

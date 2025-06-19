@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
 
-const supabaseUrl = 'https://cumsctqzjowisphyhnfj.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN1bXNjdHF6am93aXNwaHlobmZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1NTY1MTAsImV4cCI6MjA2MzEzMjUxMH0.zUe05Y1wrmnjRhTiHGzUafxxstGQtxS4Hv-jKIOwxpU';
+// Load environment variables
+dotenv.config({ path: '.env.local' });
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 console.log('🔍 Testing database connectivity...');
 

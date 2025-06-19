@@ -11,8 +11,17 @@
     <script type="module">
         import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js@2';
         
+        // Note: These values would normally come from environment variables
+        // For a test HTML file, you would need to replace these with your actual values
+        // Current project: tuqlyoimberycjtdkivm.supabase.co
         const supabaseUrl = 'https://tuqlyoimberycjtdkivm.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1cWx5b2ltYmVyeWNqdGRraXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzMjcwNTIsImV4cCI6MjA2NTkwMzA1Mn0.O1zFRbvkHq-1HMAHFXGU8uNVGcEgVCDESYWVbWwQZfI';
+        
+        // Check if the placeholder values are still present
+        if (supabaseUrl === 'YOUR_SUPABASE_URL_HERE' || supabaseKey === 'YOUR_SUPABASE_ANON_KEY_HERE') {
+            document.getElementById('results').innerHTML = '<p>⚠️ Please update the Supabase URL and key in this HTML file</p>';
+            return;
+        }
         
         const supabase = createClient(supabaseUrl, supabaseKey);
         

@@ -159,7 +159,7 @@ export const groupQueries = {  /**
         if (error.message?.includes('infinite recursion') || error.code === '42P17') {
           console.error('🔥 CRITICAL: RLS infinite recursion detected in bvf-queries getAllGroups!');
           console.error('📋 SOLUTION: Apply the RLS fix from RLS-FIX-MANUAL-INSTRUCTIONS.md');
-          console.error('🔗 Go to: https://supabase.com/dashboard/project/cumsctqzjowisphyhnfj → SQL Editor');
+          console.error('🔗 Go to: Supabase Dashboard → SQL Editor');
           console.error('⚠️  Returning empty groups array to prevent app crash');
           return [];
         }
@@ -185,7 +185,7 @@ export const groupQueries = {  /**
       if (error instanceof Error && error.message?.includes('infinite recursion')) {
         console.error('🔥 CRITICAL: RLS infinite recursion exception detected in bvf-queries getAllGroups!');
         console.error('📋 NEXT STEPS:');
-        console.error('  1. Go to Supabase Dashboard: https://supabase.com/dashboard/project/cumsctqzjowisphyhnfj');
+        console.error('  1. Go to Supabase Dashboard');
         console.error('  2. Open SQL Editor');
         console.error('  3. Apply the fix from RLS-FIX-MANUAL-INSTRUCTIONS.md');
         console.error('⚠️  Returning empty groups array to prevent app crash');
@@ -232,7 +232,7 @@ export const groupQueries = {  /**
         if (error.message?.includes('infinite recursion') || error.code === '42P17') {
           console.error('🔥 CRITICAL: RLS infinite recursion detected in bvf-queries createGroup!');
           console.error('📋 SOLUTION: Apply the RLS fix from RLS-FIX-MANUAL-INSTRUCTIONS.md');
-          console.error('🔗 Go to: https://supabase.com/dashboard/project/cumsctqzjowisphyhnfj → SQL Editor');
+          console.error('🔗 Go to: Supabase Dashboard → SQL Editor');
           console.error('⚠️  Cannot create group due to RLS recursion issue');
           throw new Error('Database configuration error. Please contact system administrator.');
         }
@@ -259,7 +259,8 @@ export const groupQueries = {  /**
       if (error instanceof Error && error.message?.includes('infinite recursion')) {
         console.error('🔥 CRITICAL: RLS infinite recursion exception detected in bvf-queries createGroup!');
         console.error('📋 NEXT STEPS:');
-        console.error('  1. Go to Supabase Dashboard: https://supabase.com/dashboard/project/cumsctqzjowisphyhnfj');
+        const projectId = process.env.NEXT_PUBLIC_SUPABASE_URL?.split('://')[1]?.split('.')[0] || 'your-project-id';
+        console.error(`  1. Go to Supabase Dashboard: https://supabase.com/dashboard/project/${projectId}`);
         console.error('  2. Open SQL Editor');
         console.error('  3. Apply the fix from RLS-FIX-MANUAL-INSTRUCTIONS.md');
         throw new Error('Database configuration error. Please contact system administrator.');

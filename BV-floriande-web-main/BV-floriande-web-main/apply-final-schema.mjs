@@ -2,13 +2,17 @@ import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config({ path: '.env.local' });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Supabase configuratie
-const supabaseUrl = 'https://cumsctqzjowisphyhnfj.supabase.co';
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN1bXNjdHF6am93aXNwaHlobmZqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzU1NjUxMCwiZXhwIjoyMDYzMTMyNTEwfQ.d5mOEGWKNF-dHXrHCPxlJpzOJnOl5_k59C1_EQwMpzc'; // Service role key
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 console.log('🚀 Applying BV Floriande Final Consolidated Schema...');
 
@@ -22,14 +26,17 @@ async function applyFinalSchema() {
       }
     });
 
-    // Test verbinding
+    // Test verbinding - skip ping check for now
     console.log('🔗 Testing Supabase connection...');
-    const { data: pingResult, error: pingError } = await supabase
-      .rpc('ping')
-      .single();
     
-    if (pingError && !pingError.message?.includes('function ping() does not exist')) {
-      console.error('❌ Connection test failed:', pingError);
+    // Test basic connection by trying to get a table list
+    const { error: testError } = await supabase
+      .from('information_schema.tables')
+      .select('table_name')
+      .limit(1);
+    
+    if (testError && !testError.message?.includes('permission denied')) {
+      console.error('❌ Connection test failed:', testError);
       return false;
     }
     
