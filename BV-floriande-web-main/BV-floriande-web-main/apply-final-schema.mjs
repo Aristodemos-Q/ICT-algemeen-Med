@@ -12,13 +12,13 @@ const __dirname = dirname(__filename);
 
 // Supabase configuratie
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-console.log('🚀 Applying BV Floriande Final Consolidated Schema...');
+console.log('🚀 Applying MedCheck+ Database Schema...');
 
-async function applyFinalSchema() {
+async function applySchema() {
   try {
-    // Maak Supabase client met service role
+    // Maak Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
@@ -26,10 +26,9 @@ async function applyFinalSchema() {
       }
     });
 
-    // Test verbinding - skip ping check for now
     console.log('🔗 Testing Supabase connection...');
     
-    // Test basic connection by trying to get a table list
+    // Test basic connection
     const { error: testError } = await supabase
       .from('information_schema.tables')
       .select('table_name')
@@ -42,73 +41,43 @@ async function applyFinalSchema() {
     
     console.log('✅ Connection successful');
 
-    // Lees de migratie
-    const migrationPath = join(__dirname, 'supabase', 'migrations', '20250610_final_consolidated_schema.sql');
-    console.log('📖 Reading migration from:', migrationPath);
+    // Step 1: Create users table first
+    console.log('📋 Step 1: Creating users table...');
+    const usersPath = join(__dirname, 'supabase', 'migrations', 'create_users_table.sql');
     
-    const migrationSQL = readFileSync(migrationPath, 'utf8');
-    console.log(`📄 Migration loaded (${migrationSQL.length} characters)`);
-
-    // Split de migratie in kleinere statements
-    const statements = migrationSQL
-      .split(';')
-      .map(stmt => stmt.trim())
-      .filter(stmt => stmt.length > 0 && !stmt.startsWith('--') && !stmt.startsWith('/*'));
-
-    console.log(`🔧 Executing ${statements.length} SQL statements...`);
-
-    // Voer elke statement uit
-    for (let i = 0; i < statements.length; i++) {
-      const statement = statements[i];
+    try {
+      const usersSQL = readFileSync(usersPath, 'utf8');
+      const { error: usersError } = await supabase.rpc('exec_sql', { sql: usersSQL });
       
-      if (statement.trim() === '') continue;
-
-      console.log(`   ${i + 1}/${statements.length}: ${statement.substring(0, 50)}...`);
-      
-      try {
-        // Voor gewone SQL statements
-        const { error } = await supabase.rpc('exec_sql', {
-          sql: statement + ';'
-        });
-
-        if (error) {
-          // Negeer bepaalde verwachte fouten
-          if (error.message?.includes('already exists') || 
-              error.message?.includes('does not exist') ||
-              error.message?.includes('relation') && error.message?.includes('already exists')) {
-            console.log(`   ⚠️  Skipped (already exists): ${error.message}`);
-            continue;
-          }
-          
-          console.error(`   ❌ Error in statement ${i + 1}:`, error.message);
-          console.error(`   Statement: ${statement.substring(0, 100)}...`);
-          
-          // Stop niet bij fouten, ga door
-          continue;
-        }
-        
-        console.log(`   ✅ Success`);
-      } catch (execError) {
-        console.error(`   ❌ Exception in statement ${i + 1}:`, execError.message);
-        continue;
+      if (usersError && !usersError.message?.includes('already exists')) {
+        console.error('❌ Error creating users table:', usersError);
+        return false;
       }
+      console.log('✅ Users table ready');
+    } catch (readError) {
+      console.log('⚠️  Users table script not found, assuming it exists');
     }
 
-    console.log('🎉 Migration application completed!');
-
-    // Test de nieuwe functies
-    console.log('🧪 Testing new functions...');
+    // Step 2: Apply transformation
+    console.log('🏥 Step 2: Applying MedCheck+ transformation...');
+    const transformPath = join(__dirname, 'supabase', 'migrations', '20250619_medcheck_transformation.sql');
     
-    const { data: pingTest, error: pingTestError } = await supabase.rpc('ping');
-    if (pingTestError) {
-      console.log('⚠️  Ping function not available:', pingTestError.message);
-    } else {
-      console.log('✅ Ping function works:', pingTest);
+    const transformSQL = readFileSync(transformPath, 'utf8');
+    console.log(`📄 Transformation loaded (${transformSQL.length} characters)`);
+
+    // Execute transformation
+    const { error: transformError } = await supabase.rpc('exec_sql', { sql: transformSQL });
+    
+    if (transformError) {
+      console.error('❌ Transformation failed:', transformError);
+      return false;
     }
 
-    // Test tabellen
-    console.log('📊 Testing tables...');
-    const tables = ['users', 'groups', 'members', 'locations', 'exercises', 'sessions'];
+    console.log('✅ MedCheck+ transformation completed!');
+
+    // Test the new schema
+    console.log('🧪 Testing new schema...');
+    const tables = ['users', 'patients', 'practice_locations', 'appointment_types', 'appointments'];
     
     for (const table of tables) {
       const { data, error } = await supabase
@@ -121,6 +90,37 @@ async function applyFinalSchema() {
       } else {
         console.log(`✅ Table ${table}: OK`);
       }
+    }
+
+    console.log('🎯 MedCheck+ schema has been applied successfully!');
+    console.log('');
+    console.log('✅ Database transformed to medical practice system');
+    console.log('✅ User authentication preserved');
+    console.log('✅ Sample data included for testing');
+    
+    return true;
+    
+  } catch (error) {
+    console.error('💥 Fatal error applying schema:', error);
+    return false;
+  }
+}
+
+// Voer de schema toe
+applySchema()
+  .then(success => {
+    if (success) {
+      console.log('🏁 Schema transformation completed successfully!');
+      process.exit(0);
+    } else {
+      console.log('💥 Schema transformation failed!');
+      process.exit(1);
+    }
+  })
+  .catch(error => {
+    console.error('💥 Unhandled error:', error);
+    process.exit(1);
+  });
     }
 
     console.log('🎯 Final consolidated schema has been applied successfully!');

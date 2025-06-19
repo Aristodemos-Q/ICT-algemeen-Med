@@ -43,19 +43,28 @@ import { nl } from 'date-fns/locale';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import ProtectedRoute from '@/components/auth/protected-route';
+import { 
+  dashboardQueries, 
+  appointmentRequestQueries, 
+  appointmentTypeQueries,
+  enhancedAppointmentQueries,
+  automationQueries 
+} from '@/lib/medcheck-queries';
 import type { 
   AppointmentRequest, 
   Appointment, 
   Patient, 
   AppointmentType,
-  DashboardStats 
-} from '@/lib/database-types';
+  DashboardStats,
+  AutomationLog
+} from '@/lib/medcheck-types';
 
 interface DashboardData {
   stats: DashboardStats;
   pendingRequests: AppointmentRequest[];
   todayAppointments: Appointment[];
   recentPatients: Patient[];
+  automationLogs: AutomationLog[];
 }
 
 export default function MedicalDashboardPage() {
@@ -75,122 +84,27 @@ export default function MedicalDashboardPage() {
     try {
       setLoading(true);
 
-      // Mock data - in een echte app zou dit van de API komen
-      const mockStats: DashboardStats = {
-        total_patients: 1847,
-        total_appointments_today: 12,
-        pending_requests: 5,
-        completed_appointments_this_week: 34,
-        upcoming_appointments: [],
-        recent_patients: []
-      };
-
-      const mockAppointmentTypes: AppointmentType[] = [
-        {
-          id: '1',
-          name: 'Regulier consult',
-          description: 'Standaard consult bij de huisarts',
-          duration_minutes: 15,
-          price: 39.50,
-          requires_doctor: true,
-          color_code: '#3B82F6',
-          is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '2',
-          name: 'Verlengd consult',
-          description: 'Uitgebreid consult voor complexe problemen',
-          duration_minutes: 30,
-          price: 65.00,
-          requires_doctor: true,
-          color_code: '#8B5CF6',
-          is_active: true,
-          created_at: new Date().toISOString()
-        }
-      ];
-
-      const mockPendingRequests: AppointmentRequest[] = [
-        {
-          id: '1',
-          patient_name: 'Maria van der Berg',
-          patient_email: 'maria@email.com',
-          patient_phone: '06-12345678',
-          patient_birth_date: '1985-03-15',
-          appointment_type_id: '1',
-          preferred_date: '2025-06-25',
-          preferred_time: '09:00',
-          chief_complaint: 'Hoofdpijn die al een week aanhoudt, vooral aan de rechterkant. Geen koorts.',
-          urgency: 'normal',
-          status: 'pending',
-          created_at: '2025-06-20T08:30:00Z',
-          updated_at: '2025-06-20T08:30:00Z'
-        },
-        {
-          id: '2',
-          patient_name: 'Jan Pieters',
-          patient_email: 'jan.pieters@email.com',
-          patient_phone: '06-98765432',
-          appointment_type_id: '2',
-          preferred_date: '2025-06-24',
-          chief_complaint: 'Vermoeidheid en gewichtsverlies de afgelopen maanden. Wil graag een uitgebreid onderzoek.',
-          urgency: 'high',
-          status: 'pending',
-          created_at: '2025-06-19T14:15:00Z',
-          updated_at: '2025-06-19T14:15:00Z'
-        },
-        {
-          id: '3',
-          patient_name: 'Sophie de Vries',
-          patient_email: 'sophie.devries@email.com',
-          patient_phone: '06-55544433',
-          patient_birth_date: '1992-08-22',
-          appointment_type_id: '1',
-          preferred_date: '2025-06-26',
-          preferred_time: '14:30',
-          chief_complaint: 'Keelpijn en hoesten sinds 3 dagen. Geen koorts, wel wat benauwd.',
-          urgency: 'normal',
-          status: 'pending',
-          created_at: '2025-06-20T10:45:00Z',
-          updated_at: '2025-06-20T10:45:00Z'
-        }
-      ];
-
-      const mockTodayAppointments: Appointment[] = [
-        {
-          id: '1',
-          patient_id: 'patient-1',
-          scheduled_at: '2025-06-20T09:00:00Z',
-          end_time: '2025-06-20T09:15:00Z',
-          status: 'confirmed',
-          chief_complaint: 'Reguliere controle diabetes',
-          follow_up_needed: false,
-          created_at: '2025-06-15T10:00:00Z'
-        },
-        {
-          id: '2',
-          patient_id: 'patient-2',
-          scheduled_at: '2025-06-20T10:30:00Z',
-          end_time: '2025-06-20T10:45:00Z',
-          status: 'arrived',
-          chief_complaint: 'Bloeddruk controle',
-          follow_up_needed: true,
-          follow_up_date: '2025-07-20',
-          created_at: '2025-06-18T14:20:00Z'
-        }
-      ];
+      // Load real data from database
+      const [stats, pendingRequests, appointmentTypesData, todayAppointments] = await Promise.all([
+        dashboardQueries.getDashboardStats(),
+        appointmentRequestQueries.getPendingRequests(),
+        appointmentTypeQueries.getActiveTypes(),
+        appointmentQueries.getTodaysAppointments()
+      ]);
 
       setDashboardData({
-        stats: mockStats,
-        pendingRequests: mockPendingRequests,
-        todayAppointments: mockTodayAppointments,
-        recentPatients: []
+        stats,
+        pendingRequests,
+        todayAppointments,
+        recentPatients: stats.recent_patients,
+        automationLogs: [] // Could be loaded separately if needed
       });
 
-      setAppointmentTypes(mockAppointmentTypes);
+      setAppointmentTypes(appointmentTypesData);
 
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      setError('Er ging iets mis bij het laden van de dashboard gegevens.');
     } finally {
       setLoading(false);
     }
@@ -200,23 +114,19 @@ export default function MedicalDashboardPage() {
     try {
       setProcessingRequest(requestId);
       
-      // In een echte app zou dit naar de API gaan
-      console.log('Approving request:', requestId);
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      // Use enhanced appointment queries to create appointment from request
+      await enhancedAppointmentQueries.createAppointmentFromRequest(requestId, user.id);
       
-      // Simuleer API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update local state
-      setDashboardData(prev => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          pendingRequests: prev.pendingRequests.filter(req => req.id !== requestId)
-        };
-      });
+      // Reload dashboard data
+      await loadDashboardData();
       
     } catch (error) {
       console.error('Error approving request:', error);
+      setError('Er ging iets mis bij het goedkeuren van het verzoek.');
     } finally {
       setProcessingRequest(null);
     }
@@ -226,23 +136,27 @@ export default function MedicalDashboardPage() {
     try {
       setProcessingRequest(requestId);
       
-      // In een echte app zou dit naar de API gaan
-      console.log('Rejecting request:', requestId, 'Reason:', reason);
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      // Process rejection
+      await appointmentRequestQueries.processRequest(requestId, 'rejected', user.id, reason);
       
-      // Simuleer API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update local state
-      setDashboardData(prev => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          pendingRequests: prev.pendingRequests.filter(req => req.id !== requestId)
-        };
+      // Log automation
+      await automationQueries.logAutomationProcess({
+        process_type: 'appointment_request',
+        entity_id: requestId,
+        status: 'completed',
+        result: { action: 'rejected', reason, processed_by: user.id }
       });
+      
+      // Reload dashboard data
+      await loadDashboardData();
       
     } catch (error) {
       console.error('Error rejecting request:', error);
+      setError('Er ging iets mis bij het afwijzen van het verzoek.');
     } finally {
       setProcessingRequest(null);
     }
@@ -624,6 +538,92 @@ export default function MedicalDashboardPage() {
                             className="text-red-600 border-red-200 hover:bg-red-50"
                           >
                             <XCircle className="h-4 w-4 mr-2" />
+                            Afwijzen
+                          </Button>
+                          
+                          <Button variant="outline">
+                            <Mail className="h-4 w-4 mr-2" />
+                            Contact
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {dashboardData.pendingRequests.length === 0 && (
+                      <div className="text-center py-12">
+                        <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          Alle verzoeken behandeld!
+                        </h3>
+                        <p className="text-gray-600">
+                          Er zijn momenteel geen afspraakverzoeken die behandeling vereisen.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Appointments Tab */}
+            <TabsContent value="appointments" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Afspraken Beheer</CardTitle>
+                  <CardDescription>
+                    Bekijk en beheer alle geplande afspraken
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-12">
+                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Afspraken Kalender
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Hier komt een interactieve kalender voor afsprakenbeheer
+                    </p>
+                    <Button asChild>
+                      <Link href="/dashboard/calendar">
+                        Naar Kalender
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Patients Tab */}
+            <TabsContent value="patients" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Patiënten Overzicht</CardTitle>
+                  <CardDescription>
+                    Zoek en beheer patiëntgegevens
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-12">
+                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Patiëntendatabase
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Hier komt het patiëntenbeheer systeem
+                    </p>
+                    <Button disabled>
+                      Binnenkort beschikbaar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    </ProtectedRoute>
+  );
+}
                             Afwijzen
                           </Button>
                           

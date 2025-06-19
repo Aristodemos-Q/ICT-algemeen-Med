@@ -244,48 +244,114 @@ export interface AppointmentFilters {
   date_to?: string;
   doctor_id?: string;
   patient_id?: string;
-  status?: string;
+  status?: Appointment['status'];
   appointment_type_id?: string;
+  location_id?: string;
 }
 
 export interface PatientFilters {
   search?: string;
   gp_patient?: boolean;
   insurance_company?: string;
+  gender?: 'male' | 'female' | 'other';
+  age_min?: number;
+  age_max?: number;
 }
 
-// Email templates data
-export interface AppointmentConfirmationEmail {
-  patient_name: string;
-  patient_email: string;
-  appointment_date: string;
-  appointment_time: string;
-  doctor_name: string;
-  location_name: string;
-  location_address: string;
-  appointment_type: string;
-  instructions?: string;
+export interface MedicalRecordFilters {
+  patient_id?: string;
+  doctor_id?: string;
+  record_type?: MedicalRecord['record_type'];
+  date_from?: string;
+  date_to?: string;
+  confidential?: boolean;
 }
 
-export interface AppointmentReminderEmail {
-  patient_name: string;
-  patient_email: string;
-  appointment_date: string;
-  appointment_time: string;
-  doctor_name: string;
-  location_name: string;
-  location_address: string;
-  appointment_type: string;
-  phone_number: string;
+// Email notification types
+export interface EmailNotification {
+  to: string;
+  subject: string;
+  template: 'appointment_confirmation' | 'appointment_reminder' | 'staff_notification';
+  data: {
+    patient_name?: string;
+    appointment_date?: string;
+    appointment_time?: string;
+    doctor_name?: string;
+    location_name?: string;
+    [key: string]: any;
+  };
+}
+
+// Time slot availability
+export interface TimeSlot {
+  time: string;
+  available: boolean;
+  doctor_id?: string;
+  doctor_name?: string;
+  appointment_type_id?: string;
+}
+
+export interface AvailabilityRequest {
+  date: string;
+  appointment_type_id: string;
+  doctor_id?: string;
+  location_id?: string;
+}
+
+// Appointment scheduling
+export interface CreateAppointmentRequest {
+  patient_id: string;
+  doctor_id?: string;
+  appointment_type_id: string;
+  location_id?: string;
+  scheduled_at: string;
+  chief_complaint?: string;
+  notes?: string;
+}
+
+// Dashboard widgets
+export interface QuickAction {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  href: string;
+  requiresAuth: boolean;
+  roles?: User['role'][];
+}
+
+// Notification system
+export interface Notification {
+  id: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  action_url?: string;
+}
+
+// Process automation tracking
+export interface AutomationLog {
+  id: string;
+  process_type: 'appointment_request' | 'email_notification' | 'reminder' | 'follow_up';
+  entity_id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  result?: any;
+  error_message?: string;
+  created_at: string;
+  completed_at?: string;
+}
+
+// Database operation result
+export interface DatabaseOperation<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  operation: 'create' | 'read' | 'update' | 'delete';
+  table: string;
+  timestamp: string;
 }
 
 // Legacy types for backward compatibility (will be removed)
-export type UserRole = 'admin' | 'doctor' | 'assistant';
-export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
-
-// Aliases for easier migration
-export type Group = Patient; // Groups are now patient lists
-export type Member = Patient; // Members are now patients
-export type Session = Appointment; // Sessions are now appointments
-export type Exercise = AppointmentType; // Exercises are now appointment types
-export type Location = PracticeLocation; // Locations are now practice locations
+export type { User as BvfUser, Patient as Member };

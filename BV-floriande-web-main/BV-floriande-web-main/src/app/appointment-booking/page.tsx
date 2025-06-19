@@ -21,7 +21,8 @@ import { Calendar, Clock, MapPin, Phone, Mail, Heart, Stethoscope, User, AlertCi
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import Link from 'next/link';
-import type { AppointmentType, PracticeLocation, AppointmentBookingForm } from '@/lib/database-types';
+import { appointmentTypeQueries, practiceLocationQueries } from '@/lib/medcheck-queries';
+import type { AppointmentType, PracticeLocation, AppointmentBookingForm } from '@/lib/medcheck-types';
 
 interface TimeSlot {
   time: string;
@@ -52,7 +53,7 @@ export default function AppointmentBookingPage() {
     urgency: 'normal'
   });
 
-  // Laad beschikbare afspraaktypes en locaties
+  // Load real data from database
   useEffect(() => {
     loadInitialData();
   }, []);
@@ -61,141 +62,51 @@ export default function AppointmentBookingPage() {
     try {
       setIsLoading(true);
       
-      // Mock data - in real app zou dit van de API komen
-      const mockAppointmentTypes: AppointmentType[] = [
-        {
-          id: '1',
-          name: 'Regulier consult',
-          description: 'Standaard consult bij de huisarts (15 minuten)',
-          duration_minutes: 15,
-          price: 39.50,
-          requires_doctor: true,
-          color_code: '#3B82F6',
-          is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '2',
-          name: 'Verlengd consult',
-          description: 'Uitgebreid consult voor complexe problemen (30 minuten)',
-          duration_minutes: 30,
-          price: 65.00,
-          requires_doctor: true,
-          color_code: '#8B5CF6',
-          is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '3',
-          name: 'Telefonisch consult',
-          description: 'Telefonische consultatie (10 minuten)',
-          duration_minutes: 10,
-          price: 25.00,
-          requires_doctor: true,
-          color_code: '#10B981',
-          is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '4',
-          name: 'Kleine ingreep',
-          description: 'Kleine medische ingreep (30 minuten)',
-          duration_minutes: 30,
-          price: 75.00,
-          requires_doctor: true,
-          color_code: '#EF4444',
-          is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '5',
-          name: 'Vaccinatie',
-          description: 'Toediening van vaccin (10 minuten)',
-          duration_minutes: 10,
-          price: 30.00,
-          requires_doctor: false,
-          color_code: '#06B6D4',
-          is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '6',
-          name: 'Bloeddruk controle',
-          description: 'Controle van bloeddruk (10 minuten)',
-          duration_minutes: 10,
-          price: 20.00,
-          requires_doctor: false,
-          color_code: '#84CC16',
-          is_active: true,
-          created_at: new Date().toISOString()
-        }
-      ];
+      // Load real appointment types and locations
+      const [typesData, locationsData] = await Promise.all([
+        appointmentTypeQueries.getActiveTypes(),
+        practiceLocationQueries.getAllLocations()
+      ]);
 
-      const mockLocations: PracticeLocation[] = [
-        {
-          id: '1',
-          name: 'Huisartsenpraktijk MedCheck+',
-          address: 'Gezondheidsstraat 123',
-          postal_code: '1234 AB',
-          city: 'Medstad',
-          phone: '010-1234567',
-          email: 'info@medcheckplus.nl',
-          is_main_location: true,
-          opening_hours: {
-            monday: { open: '08:00', close: '17:00' },
-            tuesday: { open: '08:00', close: '17:00' },
-            wednesday: { open: '08:00', close: '17:00' },
-            thursday: { open: '08:00', close: '17:00' },
-            friday: { open: '08:00', close: '16:00' }
-          },
-          facilities: ['Digitale radiologie', 'ECG', 'Spirometrie', 'Kleine chirurgie'],
-          created_at: new Date().toISOString()
-        }
-      ];
-
-      setAppointmentTypes(mockAppointmentTypes);
-      setLocations(mockLocations);
+      setAppointmentTypes(typesData);
+      setLocations(locationsData);
     } catch (err) {
+      console.error('Error loading initial data:', err);
       setError('Kon gegevens niet laden. Probeer het later opnieuw.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Laad beschikbare tijdsloten voor geselecteerde datum
+  // Load real time slots from API
   const loadTimeSlots = async (date: string, appointmentTypeId: string) => {
     try {
       setIsLoading(true);
       
-      // Mock beschikbare tijdsloten - in real app zou dit van de API komen
-      const mockTimeSlots: TimeSlot[] = [
-        { time: '08:00', available: true, doctor_name: 'Dr. A. Huisarts' },
-        { time: '08:15', available: true, doctor_name: 'Dr. A. Huisarts' },
-        { time: '08:30', available: false },
-        { time: '08:45', available: true, doctor_name: 'Dr. A. Huisarts' },
-        { time: '09:00', available: true, doctor_name: 'Dr. B. Praktijk' },
-        { time: '09:15', available: true, doctor_name: 'Dr. B. Praktijk' },
-        { time: '09:30', available: false },
-        { time: '09:45', available: true, doctor_name: 'Dr. B. Praktijk' },
-        { time: '10:00', available: true, doctor_name: 'Dr. A. Huisarts' },
-        { time: '10:15', available: true, doctor_name: 'Dr. A. Huisarts' },
-        { time: '10:30', available: true, doctor_name: 'Dr. A. Huisarts' },
-        { time: '10:45', available: false },
-        { time: '11:00', available: true, doctor_name: 'Dr. B. Praktijk' },
-        { time: '11:15', available: true, doctor_name: 'Dr. B. Praktijk' },
-        { time: '11:30', available: true, doctor_name: 'Dr. B. Praktijk' },
-        { time: '11:45', available: true, doctor_name: 'Dr. B. Praktijk' }
-      ];
-
-      setTimeSlots(mockTimeSlots);
+      const response = await fetch(
+        `/api/availability?date=${date}&appointment_type_id=${appointmentTypeId}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to load availability');
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setTimeSlots(result.data.time_slots || []);
+      } else {
+        throw new Error(result.error || 'Failed to load time slots');
+      }
     } catch (err) {
+      console.error('Error loading time slots:', err);
       setError('Kon beschikbare tijden niet laden.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle datum selectie
+  // Handle datum selectie with real availability check
   const handleDateChange = (date: string) => {
     setSelectedDate(date);
     setFormData(prev => ({ ...prev, preferred_date: date }));
@@ -214,7 +125,7 @@ export default function AppointmentBookingPage() {
     }
   };
 
-  // Submit afspraakverzoek
+  // Submit to real API with automation
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
@@ -227,17 +138,29 @@ export default function AppointmentBookingPage() {
         return;
       }
 
-      // In een echte app zou dit naar de API gaan
-      console.log('Afspraakverzoek ingediend:', formData);
-      
-      // Simuleer API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Send to API
+      const response = await fetch('/api/appointment-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to submit appointment request');
+      }
+
+      console.log('Appointment request submitted successfully:', result.data);
       
       setSuccess(true);
       setStep(4); // Ga naar bevestigingsstap
       
-    } catch (err) {
-      setError('Er ging iets mis bij het indienen van uw verzoek. Probeer het opnieuw.');
+    } catch (err: any) {
+      console.error('Error submitting appointment request:', err);
+      setError(err.message || 'Er ging iets mis bij het indienen van uw verzoek. Probeer het opnieuw.');
     } finally {
       setIsLoading(false);
     }
@@ -572,6 +495,83 @@ export default function AppointmentBookingPage() {
                         <SelectItem value="normal">Normaal</SelectItem>
                         <SelectItem value="high">Hoog - Liefst deze week</SelectItem>
                         <SelectItem value="urgent">Urgent - Zo snel mogelijk</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-yellow-800 mb-2">Belangrijk:</h4>
+                <ul className="text-sm text-yellow-700 space-y-1">
+                  <li>• Dit is een afspraakverzoek, nog geen definitieve afspraak</li>
+                  <li>• Wij nemen binnen 24 uur contact op voor bevestiging</li>
+                  <li>• Bij spoed kunt u bellen: {mainLocation?.phone}</li>
+                  <li>• Voor noodgevallen: bel 112</li>
+                </ul>
+              </div>
+
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={() => setStep(2)}>
+                  Vorige Stap
+                </Button>
+                <Button 
+                  onClick={handleSubmit}
+                  disabled={isLoading || !formData.patient_name || !formData.patient_email || !formData.chief_complaint}
+                  className="px-8"
+                >
+                  {isLoading ? 'Verzenden...' : 'Afspraakverzoek Versturen'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Praktijk informatie */}
+        {mainLocation && (
+          <Card className="mt-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Praktijk Informatie
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="font-semibold mb-2">{mainLocation.name}</h3>
+                  <div className="space-y-2 text-sm">
+                    <p>{mainLocation.address}</p>
+                    <p>{mainLocation.postal_code} {mainLocation.city}</p>
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      <span>{mainLocation.phone}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      <span>{mainLocation.email}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="font-semibold mb-2">Openingstijden</h3>
+                  <div className="space-y-1 text-sm">
+                    {mainLocation.opening_hours && Object.entries(mainLocation.opening_hours).map(([day, hours]) => (
+                      <div key={day} className="flex justify-between">
+                        <span className="capitalize">{day}:</span>
+                        <span>{hours.open} - {hours.close}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
                       </SelectContent>
                     </Select>
                   </div>

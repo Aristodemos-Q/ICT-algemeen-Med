@@ -1,383 +1,517 @@
 /*
- * MedCheck+ Web Application  
+ * MedCheck+ Medical Practice Portal
  * © 2025 qdela. All rights reserved.
  * 
- * Modern web portal for general practice (huisartsenpraktijk)
- * Focused on werkproces 2 (automatisering) & 3 (databasebeheer)
+ * Homepage - Improved layout with sidebar
  */
 
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import { authService } from '@/lib/authService';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   Heart, 
-  Clock, 
   Calendar, 
-  User, 
-  Shield, 
+  Clock, 
   Phone, 
-  Star,
-  CheckCircle,
-  Users,
-  FileText,
+  Mail, 
+  MapPin, 
+  Users, 
   Stethoscope,
-  Pill,
-  Activity
+  ArrowRight,
+  Bell,
+  Activity,
+  FileText,
+  UserPlus,
+  AlertCircle,
+  CheckCircle,
+  Star
 } from 'lucide-react';
 
-export default function Home() {
-  const [mounted, setMounted] = useState(false);
-  const router = useRouter();
-  const { user, loading } = useAuth();
+interface QuickStat {
+  label: string;
+  value: string;
+  icon: React.ReactNode;
+  color: string;
+}
 
-  // Ensure we're client-side mounted
+interface RecentActivity {
+  id: string;
+  type: 'appointment' | 'patient' | 'message';
+  message: string;
+  time: string;
+  urgent?: boolean;
+}
+
+export default function HomePage() {
+  const [quickStats, setQuickStats] = useState<QuickStat[]>([]);
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    setMounted(true);
+    loadDashboardData();
   }, []);
 
-  // Don't render anything until mounted
-  if (!mounted) {
-    return null;
-  }
+  const loadDashboardData = async () => {
+    try {
+      // Mock data - in productie zou dit van de API komen
+      const mockStats: QuickStat[] = [
+        {
+          label: 'Vandaag',
+          value: '24',
+          icon: <Calendar className="h-4 w-4" />,
+          color: 'text-blue-600'
+        },
+        {
+          label: 'Wachtend',
+          value: '8',
+          icon: <Clock className="h-4 w-4" />,
+          color: 'text-orange-600'
+        },
+        {
+          label: 'Patiënten',
+          value: '1,247',
+          icon: <Users className="h-4 w-4" />,
+          color: 'text-green-600'
+        },
+        {
+          label: 'Deze week',
+          value: '156',
+          icon: <CheckCircle className="h-4 w-4" />,
+          color: 'text-purple-600'
+        }
+      ];
 
-  // Show loading during auth check
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Laden...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+      const mockActivities: RecentActivity[] = [
+        {
+          id: '1',
+          type: 'appointment',
+          message: 'Nieuwe afspraak: Maria van der Berg',
+          time: '5 min geleden',
+          urgent: false
+        },
+        {
+          id: '2',
+          type: 'message',
+          message: 'URGENT: Spoedverzoek Emma de Vries',
+          time: '15 min geleden',
+          urgent: true
+        },
+        {
+          id: '3',
+          type: 'patient',
+          message: 'Nieuwe patiënt geregistreerd',
+          time: '30 min geleden'
+        },
+        {
+          id: '4',
+          type: 'appointment',
+          message: 'Afspraak voltooid: Lisa Bakker',
+          time: '45 min geleden'
+        }
+      ];
 
-  // MedCheck+ Homepage voor patiënten en medewerkers
+      setQuickStats(mockStats);
+      setRecentActivities(mockActivities);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case 'appointment':
+        return <Calendar className="h-4 w-4 text-blue-500" />;
+      case 'patient':
+        return <UserPlus className="h-4 w-4 text-green-500" />;
+      case 'message':
+        return <Bell className="h-4 w-4 text-orange-500" />;
+      default:
+        return <Activity className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-green-50">
-      {/* Header met navigatie */}
-      <header className="py-4 bg-white shadow-lg border-b-2 border-blue-100">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center">
-            <div className="bg-blue-600 rounded-lg p-2 mr-4 shadow-lg flex-shrink-0">
-              <Heart className="h-12 w-12 text-white" />
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold text-blue-900">MedCheck+</h2>
-              <p className="text-sm text-gray-600">Moderne Huisartsenpraktijk</p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Heart className="h-12 w-12 text-red-500" />
+            <h1 className="text-4xl font-bold text-gray-900">MedCheck+</h1>
           </div>
-          <div className="space-x-4">
-            {user ? (
-              // Ingelogde gebruiker navigatie
-              <>
-                <Link 
-                  href="/dashboard"
-                  className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-medium shadow-sm"
-                >
-                  Dashboard
-                </Link>
-                <button
-                  onClick={async () => {
-                    try {
-                      await authService.supabase.auth.signOut();
-                      router.refresh();
-                    } catch (error) {
-                      console.error('Logout error:', error);
-                    }
-                  }}
-                  className="px-5 py-2 rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors font-medium"
-                >
-                  Uitloggen
-                </button>
-              </>
-            ) : (
-              // Niet-ingelogde gebruiker navigatie
-              <>
-                <Link 
-                  href="/appointment-booking"
-                  className="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors font-medium shadow-sm"
-                >
-                  Afspraak Maken
-                </Link>
-                <Link 
-                  href="/login"
-                  className="px-5 py-2 rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors font-medium"
-                >
-                  Inloggen
-                </Link>
-              </>
-            )}
-          </div>
+          <p className="text-xl text-gray-600 mb-2">Moderne Huisartsenpraktijk</p>
+          <p className="text-gray-500">Uw gezondheid, onze prioriteit</p>
         </div>
-      </header>
-      
-      {/* Hero section */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="flex flex-col lg:flex-row gap-12 items-center mb-16">
-          <div className="lg:w-1/2">
-            <h1 className="text-5xl font-bold text-blue-900 mb-6 leading-tight">
-              Welkom bij <span className="text-green-600">MedCheck+</span>
-            </h1>
-            <p className="text-xl text-gray-600 mb-8">
-              Uw moderne huisartsenpraktijk voor kwalitatieve zorg. 
-              Maak eenvoudig een afspraak online of beheer uw medische gegevens veilig.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              {!user && (
-                <Link 
-                  href="/appointment-booking"
-                  className="px-8 py-3 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-all font-medium shadow-lg hover:shadow-xl hover:translate-y-[-2px]"
-                >
-                  <Calendar className="inline h-5 w-5 mr-2" />
-                  Afspraak Maken
-                </Link>
-              )}
-              <Link 
-                href="#contact"
-                className="px-8 py-3 rounded-lg bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50 transition-all font-medium shadow-md hover:shadow-lg hover:translate-y-[-2px]"
-              >
-                <Phone className="inline h-5 w-5 mr-2" />
-                Contact
-              </Link>
-            </div>
+
+        {/* Main Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Left Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Quick Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Vandaag Overzicht
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {quickStats.map((stat, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={stat.color}>
+                        {stat.icon}
+                      </div>
+                      <span className="text-sm text-gray-600">{stat.label}</span>
+                    </div>
+                    <span className="font-semibold">{stat.value}</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Snelle Acties</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button asChild className="w-full justify-start" variant="outline">
+                  <Link href="/appointment-booking">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Nieuwe Afspraak
+                  </Link>
+                </Button>
+                <Button asChild className="w-full justify-start" variant="outline">
+                  <Link href="/dashboard">
+                    <Stethoscope className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Link>
+                </Button>
+                <Button asChild className="w-full justify-start" variant="outline">
+                  <Link href="/dashboard/appointment-requests">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Verzoeken
+                  </Link>
+                </Button>
+                <Button asChild className="w-full justify-start" variant="outline">
+                  <Link href="/login">
+                    <Users className="h-4 w-4 mr-2" />
+                    Inloggen
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Recent Activities */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Recente Activiteit
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {recentActivities.slice(0, 4).map((activity) => (
+                    <div key={activity.id} className={`flex items-start gap-3 p-2 rounded-lg ${
+                      activity.urgent ? 'bg-red-50 border border-red-200' : 'bg-gray-50'
+                    }`}>
+                      {getActivityIcon(activity.type)}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {activity.message}
+                        </p>
+                        <p className="text-xs text-gray-500">{activity.time}</p>
+                      </div>
+                      {activity.urgent && (
+                        <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Practice Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  Contact Info
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="h-4 w-4 text-gray-500" />
+                  <span>010-1234567</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Mail className="h-4 w-4 text-gray-500" />
+                  <span>info@medcheckplus.nl</span>
+                </div>
+                <div className="flex items-start gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-gray-500 mt-0.5" />
+                  <div>
+                    <p>Gezondheidsstraat 123</p>
+                    <p>1234 AB Medstad</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Opening Hours */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Openingstijden
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Maandag - Donderdag</span>
+                    <span>08:00 - 17:00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Vrijdag</span>
+                    <span>08:00 - 16:00</span>
+                  </div>
+                  <div className="flex justify-between text-red-600">
+                    <span>Weekend</span>
+                    <span>Gesloten</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          <div className="lg:w-1/2 flex justify-center">
-            <div className="relative w-full max-w-[500px]">
-              <div className="bg-white rounded-xl shadow-2xl overflow-hidden border-2 border-blue-200">
-                {/* Medical header */}
-                <div className="h-16 bg-gradient-to-r from-blue-600 to-green-600"></div>
-                
-                {/* Medical icon section */}
-                <div className="py-16 px-4 flex items-center justify-center bg-white">
-                  <div className="relative">
-                    <div className="w-48 h-48 bg-gradient-to-br from-blue-100 to-green-100 rounded-full flex items-center justify-center">
-                      <Stethoscope className="w-24 h-24 text-blue-600" />
+
+          {/* Main Content */}
+          <div className="lg:col-span-3 space-y-8">
+            {/* Hero Section */}
+            <Card className="bg-gradient-to-r from-blue-600 to-green-600 text-white">
+              <CardContent className="p-8">
+                <div className="flex flex-col md:flex-row items-center justify-between">
+                  <div className="mb-6 md:mb-0">
+                    <h2 className="text-3xl font-bold mb-4">
+                      Welkom bij MedCheck+
+                    </h2>
+                    <p className="text-xl opacity-90 mb-6">
+                      Moderne zorg met persoonlijke aandacht
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+                        <Link href="/appointment-booking">
+                          <Calendar className="h-5 w-5 mr-2" />
+                          Afspraak Maken
+                        </Link>
+                      </Button>
+                      <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+                        <Link href="/login">
+                          Inloggen voor Medewerkers
+                          <ArrowRight className="h-5 w-5 ml-2" />
+                        </Link>
+                      </Button>
                     </div>
-                    <div className="absolute -top-4 -right-4 bg-green-500 rounded-full p-3">
-                      <Heart className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="hidden md:block">
+                    <Stethoscope className="h-32 w-32 opacity-20" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Services Grid */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Onze Diensten</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Stethoscope className="h-5 w-5 text-blue-600" />
+                      Reguliere Consulten
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">
+                      Standaard huisartsconsulten voor alle leeftijden
+                    </p>
+                    <Badge variant="secondary">15 minuten</Badge>
+                  </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Heart className="h-5 w-5 text-red-600" />
+                      Preventieve Zorg
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">
+                      Vaccinaties, controles en gezondheidsscreenings
+                    </p>
+                    <Badge variant="secondary">Verschillende tijden</Badge>
+                  </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Phone className="h-5 w-5 text-green-600" />
+                      Telefonisch Consult
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">
+                      Snelle medische vragen via de telefoon
+                    </p>
+                    <Badge variant="secondary">10 minuten</Badge>
+                  </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-purple-600" />
+                      Kleine Ingrepen
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">
+                      Hechten, sterilisatie en andere kleine procedures
+                    </p>
+                    <Badge variant="secondary">30 minuten</Badge>
+                  </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-orange-600" />
+                      Uitslagbesprekingen
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">
+                      Bespreking van laboratorium en onderzoeksresultaten
+                    </p>
+                    <Badge variant="secondary">15 minuten</Badge>
+                  </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-indigo-600" />
+                      Intake Nieuwe Patiënten
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">
+                      Uitgebreide kennismaking voor nieuwe patiënten
+                    </p>
+                    <Badge variant="secondary">45 minuten</Badge>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Why Choose Us */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl">Waarom MedCheck+?</CardTitle>
+                <CardDescription>
+                  Moderne zorg met de persoonlijke touch van een traditionele huisartspraktijk
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                      <div>
+                        <h3 className="font-semibold">Digitaal Vooruitstrevend</h3>
+                        <p className="text-sm text-gray-600">Online afspraken maken en digitale communicatie</p>
+                      </div>
                     </div>
-                    <div className="absolute -bottom-4 -left-4 bg-blue-500 rounded-full p-3">
-                      <Shield className="w-8 h-8 text-white" />
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                      <div>
+                        <h3 className="font-semibold">Persoonlijke Zorg</h3>
+                        <p className="text-sm text-gray-600">Vaste huisarts die u kent en begrijpt</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                      <div>
+                        <h3 className="font-semibold">Moderne Faciliteiten</h3>
+                        <p className="text-sm text-gray-600">Nieuwste medische apparatuur en technieken</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                      <div>
+                        <h3 className="font-semibold">Flexibele Openingstijden</h3>
+                        <p className="text-sm text-gray-600">Ook 's avonds en vroeg op de ochtend bereikbaar</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                      <div>
+                        <h3 className="font-semibold">Snelle Service</h3>
+                        <p className="text-sm text-gray-600">Korte wachttijden en efficiënte afhandeling</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                      <div>
+                        <h3 className="font-semibold">Preventieve Focus</h3>
+                        <p className="text-sm text-gray-600">Voorkomen is beter dan genezen</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-                
-                {/* Medical footer */}
-                <div className="h-16 bg-gradient-to-r from-green-600 to-blue-600"></div>
-              </div>
-              
-              {/* Platform label */}
-              <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white text-blue-900 px-10 py-3 rounded-full font-bold shadow-lg text-xl border-2 border-blue-600">
-                Digitaal Zorgportaal
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Quick actions voor niet-ingelogde gebruikers */}
-        {!user && (
-          <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8 border-t-4 border-blue-600 mb-16">
-            <h2 className="text-3xl font-semibold mb-8 text-blue-900 text-center">Snel en Eenvoudig</h2>
-            
-            <div className="grid md:grid-cols-3 gap-6">
-              <Link href="/appointment-booking" className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg border border-green-200 hover:shadow-md transition-all group">
-                <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
-                  <Calendar className="h-8 w-8" />
-                </div>
-                <h3 className="text-xl font-medium text-green-800 mb-2">Afspraak Maken</h3>
-                <p className="text-green-700">
-                  Plan online een afspraak bij onze huisartsen. Kies zelf de gewenste tijd en datum.
+              </CardContent>
+            </Card>
+
+            {/* CTA Section */}
+            <Card className="bg-gray-50">
+              <CardContent className="p-8 text-center">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Klaar om een afspraak te maken?
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  Maak eenvoudig online een afspraak of neem contact met ons op
                 </p>
-              </Link>
-              
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
-                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white mb-4">
-                  <Clock className="h-8 w-8" />
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button asChild size="lg">
+                    <Link href="/appointment-booking">
+                      <Calendar className="h-5 w-5 mr-2" />
+                      Online Afspraak Maken
+                    </Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline">
+                    <Link href="tel:010-1234567">
+                      <Phone className="h-5 w-5 mr-2" />
+                      Bel: 010-1234567
+                    </Link>
+                  </Button>
                 </div>
-                <h3 className="text-xl font-medium text-blue-800 mb-2">Openingstijden</h3>
-                <div className="text-blue-700 space-y-1 text-sm">
-                  <div>Ma-Vr: 08:00 - 17:00</div>
-                  <div>Zaterdag: 09:00 - 12:00</div>
-                  <div>Spoed: 24/7 beschikbaar</div>
-                </div>
-              </div>
-              
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
-                <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white mb-4">
-                  <Phone className="h-8 w-8" />
-                </div>
-                <h3 className="text-xl font-medium text-purple-800 mb-2">Contact</h3>
-                <div className="text-purple-700 space-y-1 text-sm">
-                  <div>📞 010-1234567</div>
-                  <div>✉️ info@medcheckplus.nl</div>
-                  <div>📍 Gezondheidsstraat 123</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Onze diensten */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
-          <div className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow border border-blue-100">
-            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <User className="w-8 h-8" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2 text-blue-900 text-center">Huisartsgeneeskunde</h3>
-            <p className="text-gray-600 text-center">
-              Volledige huisartszorg voor het hele gezin. Van preventie tot behandeling van acute klachten.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow border border-green-100">
-            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Activity className="w-8 h-8" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2 text-green-800 text-center">Preventieve Zorg</h3>
-            <p className="text-gray-600 text-center">
-              Regelmatige controles, vaccinaties en gezondheidsscreenings voor optimale preventie.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow border border-purple-100">
-            <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-8 h-8" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2 text-purple-800 text-center">Digitale Services</h3>
-            <p className="text-gray-600 text-center">
-              Online afspraken, herhaalrecepten aanvragen en toegang tot uw medische gegevens.
-            </p>
-          </div>
-        </div>
-        
-        {/* Waarom MedCheck+ */}
-        <div className="bg-gradient-to-r from-blue-50 to-green-50 py-16 rounded-xl mb-16">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-blue-900 mb-8 text-center">
-              Waarom kiezen voor <span className="text-green-600">MedCheck+</span>?
-            </h2>
-            <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
-              <div className="bg-white p-8 rounded-xl shadow-md">
-                <h3 className="text-xl font-semibold mb-4 text-blue-900">Moderne Zorgverlening</h3>
-                <ul className="space-y-3 text-gray-700">
-                  <li className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
-                    <span>Digitale afspraken plannen 24/7</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
-                    <span>Elektronisch patiëntendossier (EPD)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
-                    <span>Online toegang tot uitslagen en recepten</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
-                    <span>Veilige communicatie met uw zorgteam</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="bg-white p-8 rounded-xl shadow-md">
-                <h3 className="text-xl font-semibold mb-4 text-blue-900">Kwaliteit & Toegankelijkheid</h3>
-                <ul className="space-y-3 text-gray-700">
-                  <li className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
-                    <span>Ervaren huisartsen en specialisten</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
-                    <span>Korte wachttijden voor afspraken</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
-                    <span>Centrale locatie en goede bereikbaarheid</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
-                    <span>24/7 spoedlijn voor urgente zaken</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Contact sectie */}
-        <div id="contact" className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8 border-t-4 border-green-600">
-          <h2 className="text-3xl font-semibold mb-8 text-blue-900 text-center">Contact & Bereikbaarheid</h2>
-          
-          <div className="grid md:grid-cols-2 gap-8">
-            <div>
-              <h3 className="text-xl font-medium mb-4 text-blue-800">Praktijkgegevens</h3>
-              <div className="space-y-3 text-gray-700">
-                <div className="flex items-center">
-                  <Phone className="w-5 h-5 text-blue-600 mr-3" />
-                  <span>010-1234567 (centrale)</span>
-                </div>
-                <div className="flex items-center">
-                  <Phone className="w-5 h-5 text-red-600 mr-3" />
-                  <span>010-1234568 (spoed 24/7)</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="w-5 h-5 text-blue-600 mr-3">✉️</span>
-                  <span>info@medcheckplus.nl</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="w-5 h-5 text-blue-600 mr-3">📍</span>
-                  <span>Gezondheidsstraat 123<br />3011 AA Rotterdam</span>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="text-xl font-medium mb-4 text-blue-800">Openingstijden</h3>
-              <div className="space-y-2 text-gray-700">
-                <div className="flex justify-between">
-                  <span>Maandag - Vrijdag:</span>
-                  <span className="font-medium">08:00 - 17:00</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Zaterdag:</span>
-                  <span className="font-medium">09:00 - 12:00</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Zondag:</span>
-                  <span className="font-medium">Gesloten</span>
-                </div>
-                <div className="flex justify-between pt-2 border-t">
-                  <span>Spoedlijn:</span>
-                  <span className="font-medium text-red-600">24/7 bereikbaar</span>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
-      
-      {/* Footer */}
-      <footer className="bg-blue-900 text-white py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center mb-4 md:mb-0">
-              <div className="bg-white rounded-lg p-2 mr-3 shadow-md flex-shrink-0">
-                <Heart className="h-8 w-8 text-blue-600" />
-              </div>
-              <span className="font-bold text-lg">MedCheck+ - Moderne Huisartsenpraktijk</span>
-            </div>
-            <div className="text-sm opacity-80">
-              © {new Date().getFullYear()} MedCheck+ - Alle rechten voorbehouden
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

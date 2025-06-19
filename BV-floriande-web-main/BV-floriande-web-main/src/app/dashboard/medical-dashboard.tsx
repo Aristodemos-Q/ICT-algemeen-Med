@@ -23,8 +23,12 @@ import {
   Phone
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { dashboardQueries, appointmentRequestQueries } from '@/lib/medcheck-queries';
-import { DashboardStats, AppointmentRequest, Appointment, Patient } from '@/lib/medcheck-types';
+import { 
+  dashboardQueries, 
+  appointmentRequestQueries, 
+  automationQueries 
+} from '@/lib/medcheck-queries';
+import { DashboardStats, AppointmentRequest, AutomationLog } from '@/lib/medcheck-types';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -33,11 +37,13 @@ export default function MedicalDashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [pendingRequests, setPendingRequests] = useState<AppointmentRequest[]>([]);
+  const [automationLogs, setAutomationLogs] = useState<AutomationLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadDashboardData() {
       try {
+        // Load real data from database
         const [dashboardStats, requests] = await Promise.all([
           dashboardQueries.getDashboardStats(),
           appointmentRequestQueries.getPendingRequests()
@@ -45,6 +51,20 @@ export default function MedicalDashboard() {
 
         setStats(dashboardStats);
         setPendingRequests(requests);
+
+        // Load recent automation logs
+        try {
+          const { data: logs } = await supabase
+            .from('automation_logs')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(10);
+          
+          setAutomationLogs(logs || []);
+        } catch (logError) {
+          console.warn('Could not load automation logs:', logError);
+        }
+
       } catch (error) {
         console.error('Error loading dashboard data:', error);
       } finally {
@@ -54,6 +74,10 @@ export default function MedicalDashboard() {
 
     if (user) {
       loadDashboardData();
+      
+      // Set up real-time updates
+      const interval = setInterval(loadDashboardData, 30000); // Refresh every 30 seconds
+      return () => clearInterval(interval);
     }
   }, [user]);
 
@@ -94,15 +118,21 @@ export default function MedicalDashboard() {
 
   return (
     <div className="p-6 space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">
-          Welkom terug, {user?.name}. Hier is een overzicht van vandaag.
-        </p>
+      {/* Header with real-time indicator */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600">
+            Welkom terug, {user?.name}. Hier is een overzicht van vandaag.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-green-600">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          Live data
+        </div>
       </div>
 
-      {/* Statistics Cards */}
+      {/* Real Statistics Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -160,6 +190,48 @@ export default function MedicalDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Process Automation Monitor */}
+      {automationLogs.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-blue-500" />
+              Proces Automatisering (Werkproces 2)
+            </CardTitle>
+            <CardDescription>
+              Recente geautomatiseerde processen
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {automationLogs.slice(0, 5).map((log) => (
+                <div key={log.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium capitalize">
+                        {log.process_type.replace('_', ' ')}
+                      </span>
+                      <Badge 
+                        variant={log.status === 'completed' ? 'default' : 
+                                log.status === 'failed' ? 'destructive' : 'secondary'}
+                      >
+                        {log.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Entity: {log.entity_id}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {format(new Date(log.created_at), 'dd MMM yyyy HH:mm', { locale: nl })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Pending Appointment Requests */}

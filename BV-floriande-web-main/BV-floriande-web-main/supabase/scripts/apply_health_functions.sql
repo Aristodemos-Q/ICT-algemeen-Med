@@ -1,8 +1,8 @@
 -- Combined script with all health check functions
 
 -- Drop existing functions first to avoid return type conflicts
-DROP FUNCTION IF EXISTS public.get_service_status();
-DROP FUNCTION IF EXISTS public.ping();
+DROP FUNCTION IF EXISTS public.get_service_status() CASCADE;
+DROP FUNCTION IF EXISTS public.ping() CASCADE;
 
 -- Create a function to check if the database is functioning
 CREATE OR REPLACE FUNCTION public.get_service_status()
@@ -18,6 +18,13 @@ BEGIN
     'timestamp', NOW()::text,
     'message', 'Database is functioning normally'
   );
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN jsonb_build_object(
+      'status', 'error',
+      'timestamp', NOW()::text,
+      'message', SQLERRM
+    );
 END;
 $$;
 
