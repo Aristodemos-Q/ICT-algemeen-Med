@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer blue circle -->
+  <circle cx="100" cy="100" r="95" fill="#0077C8"/>
+  
+  <!-- Inner lime/yellow circle -->
+  <circle cx="100" cy="100" r="75" fill="#CADD26"/>
+  
+  <!-- Badminton player silhouette -->
+  <path d="M100,40 c-5,0 -10,5 -10,10 c0,5 5,10 10,10 c5,0 10,-5 10,-10 c0,-5 -5,-10 -10,-10 z
+           M92,60 l-2,40 l-10,20 l-5,25 h15 l5,-20 l5,-5 l5,5 l5,20 h15 l-5,-25 l-10,-20 l-2,-40 z
+           M75,85 c-5,0 -15,25 -5,30 c5,2 15,-25 5,-30 z" 
+        fill="#0077C8"/>
+  
+  <!-- Text on outer ring -->
+  <path id="textCircle" d="M100,20 a80,80 0 1,1 -0.1,0" fill="none"/>
+  <text font-size="14" font-family="Arial" font-weight="bold" fill="white">
+    <textPath href="#textCircle" startOffset="5%">BADMINTON VERENIGING</textPath>
+  </text>
+  
+  <!-- Bottom text -->
+  <text x="100" y="160" font-size="20" font-family="Arial" font-weight="bold" text-anchor="middle" fill="white">FLORIANDE</text>
+  
+  <!-- Stars -->
+  <path d="M40,100 l2,-1 l1,2 l1,-2 l2,1 l-1,-2 l2,-1 l-2,-1 l1,-2 l-2,1 l-1,-2 l-1,2 l-2,-1 l1,2 l-2,1 z" fill="white"/>
+  <path d="M160,100 l2,-1 l1,2 l1,-2 l2,1 l-1,-2 l2,-1 l-2,-1 l1,-2 l-2,1 l-1,-2 l-1,2 l-2,-1 l1,2 l-2,1 z" fill="white"/>
+</svg>

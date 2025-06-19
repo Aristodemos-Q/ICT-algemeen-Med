@@ -1,0 +1,103 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Cpu, AlertTriangle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui/button';
+import { LoginForm } from './components/login-form';
+import { checkSupabaseConnection } from '@/utils/auth-helpers';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
+export default function LoginPage() {
+  const router = useRouter();
+  const { user, loading: authLoading, login, error: authError } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [formLoading, setFormLoading] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check Supabase connection on page load
+    async function checkConnection() {
+      try {
+        const isConnected = await checkSupabaseConnection();
+        if (!isConnected) {
+          setConnectionError('Er kon geen verbinding worden gemaakt met de database. Probeer het later opnieuw.');
+        }
+      } catch (err) {
+        console.error('Connection check error:', err);
+        setConnectionError('Er kon geen verbinding worden gemaakt met de database. Probeer het later opnieuw.');
+      }
+    }
+    
+    checkConnection();
+      // Redirect to trainer dashboard if user is already logged in
+    if (user) {
+      router.replace('/dashboard/trainer-dashboard');
+    }
+  }, [user, router]);
+
+  const handleLogin = async (email: string, password: string, remember: boolean) => {
+    setFormLoading(true);
+    setError(null);
+    try {
+      await login(email, password);
+      // Redirect happens in the AuthContext
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Er is een probleem met inloggen. Controleer je gegevens.';
+      console.error('Login page error:', errorMessage);
+      setError(errorMessage);
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  if (authLoading) {
+    // While checking session, render nothing for instant redirect UX
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/50 flex flex-col items-center justify-center p-4 md:p-8">
+      <div className="w-full max-w-md">
+        <div className="mb-8 text-center">
+          <Link href="/" className="inline-flex items-center gap-2">
+            <div className="relative">
+              <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-primary to-purple-500 opacity-70 blur-sm"></div>
+              <Cpu className="h-8 w-8 text-primary relative z-10" />
+            </div>
+            <span className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
+              SensorIQ
+            </span>
+          </Link>
+          <h1 className="mt-6 text-3xl font-extrabold tracking-tight">Welcome back</h1>
+          <p className="mt-2 text-muted-foreground">
+            Sign in to access your dashboard and monitoring tools
+          </p>
+        </div>
+        {connectionError ? (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            <AlertDescription>{connectionError}</AlertDescription>
+          </Alert>
+        ) : (
+          <div className="relative">
+            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary/20 to-purple-500/20 opacity-70 blur-md"></div>
+            <div className="relative bg-white dark:bg-background shadow-xl rounded-xl p-6 md:p-8">
+              <LoginForm onLogin={handleLogin} isLoading={formLoading} error={error} />
+            </div>
+          </div>
+        )}
+        <div className="mt-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            Access restricted to authorized personnel only. <br />
+            <Link href="/" className="text-primary hover:underline">
+              Return to home
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
