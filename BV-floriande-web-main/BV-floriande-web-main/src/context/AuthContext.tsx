@@ -81,10 +81,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {  const [us
           setLoading(false); // Set loading to false after user state is updated
             // Handle redirects based on auth state
           if (event === 'SIGNED_IN' && session?.user) {
-            console.log('✅ SIGNED_IN event - redirecting to homepage');
+            console.log('✅ SIGNED_IN event - redirecting to dashboard');
             // Small delay to ensure state is fully updated
             setTimeout(() => {
-              router.push('/');
+              router.push('/dashboard');
             }, 150);
           } else if (event === 'SIGNED_OUT') {
             console.log('🚪 SIGNED_OUT event - redirecting to login');

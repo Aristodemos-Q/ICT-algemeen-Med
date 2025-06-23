@@ -59,10 +59,10 @@ function LoginPageContent() {
         setConnectionError(errorMessage);
       }
     }
-      checkConnection();    // Redirect to homepage if user is already logged in
+      checkConnection();    // Redirect to dashboard if user is already logged in
     if (user) {
       console.log('User session found:', user);
-      router.replace('/');
+      router.replace('/dashboard');
     }
   }, [user, router, searchParams]);
 
@@ -98,10 +98,10 @@ function LoginPageContent() {
         <div className="w-full max-w-md space-y-8">
           <div>
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-              Inloggen bij BV Floriande
+              Inloggen bij MedCheck+
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              Trainers platform voor het bijhouden van oefeningen
+              Medische praktijk portal voor patiënten en medewerkers
             </p>
           </div>
 
@@ -121,9 +121,9 @@ function LoginPageContent() {
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle>Welkom terug</CardTitle>
+                <CardTitle>Welkom bij MedCheck+</CardTitle>
                 <CardDescription>
-                  Voer je inloggegevens in om toegang te krijgen tot het trainingsplatform
+                  Voer uw inloggegevens in voor toegang tot het patiëntenportaal
                 </CardDescription>
               </CardHeader>
               <CardContent>
