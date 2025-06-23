@@ -148,11 +148,10 @@ export default function HomePage() {
                           <Calendar className="h-5 w-5 mr-2" />
                           Afspraak Maken
                         </Link>
-                      </Button>
-                      <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+                      </Button>                      <Button asChild size="lg" className="bg-blue-700 text-white hover:bg-blue-800">
                         <Link href="/login">
-                          Inloggen voor Medewerkers
-                          <ArrowRight className="h-5 w-5 ml-2" />
+                          <ArrowRight className="h-5 w-5 mr-2" />
+                          Inloggen voor Patiënt
                         </Link>
                       </Button>
                     </div>
@@ -167,103 +166,103 @@ export default function HomePage() {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Onze Diensten</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 <Link href="/diensten/reguliere-consulten">
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-2 text-lg">
                         <Stethoscope className="h-5 w-5 text-blue-600" />
                         Reguliere Consulten
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600 mb-4">
+                    <CardContent className="flex flex-col justify-between flex-1">
+                      <p className="text-gray-600 mb-4 min-h-[3rem]">
                         Standaard huisartsconsulten voor alle leeftijden
                       </p>
-                      <Badge variant="secondary">15 minuten</Badge>
+                      <Badge variant="secondary" className="w-fit">15 minuten</Badge>
                     </CardContent>
                   </Card>
                 </Link>
 
                 <Link href="/diensten/preventieve-zorg">
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-2 text-lg">
                         <Heart className="h-5 w-5 text-red-600" />
                         Preventieve Zorg
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600 mb-4">
+                    <CardContent className="flex flex-col justify-between flex-1">
+                      <p className="text-gray-600 mb-4 min-h-[3rem]">
                         Vaccinaties, controles en gezondheidsscreenings
                       </p>
-                      <Badge variant="secondary">Verschillende tijden</Badge>
+                      <Badge variant="secondary" className="w-fit">Verschillende tijden</Badge>
                     </CardContent>
                   </Card>
                 </Link>
 
                 <Link href="/diensten/telefonisch-consult">
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-2 text-lg">
                         <Phone className="h-5 w-5 text-green-600" />
                         Telefonisch Consult
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600 mb-4">
+                    <CardContent className="flex flex-col justify-between flex-1">
+                      <p className="text-gray-600 mb-4 min-h-[3rem]">
                         Snelle medische vragen via de telefoon
                       </p>
-                      <Badge variant="secondary">10 minuten</Badge>
+                      <Badge variant="secondary" className="w-fit">10 minuten</Badge>
                     </CardContent>
                   </Card>
                 </Link>
 
                 <Link href="/diensten/kleine-ingrepen">
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-2 text-lg">
                         <Activity className="h-5 w-5 text-purple-600" />
                         Kleine Ingrepen
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600 mb-4">
+                    <CardContent className="flex flex-col justify-between flex-1">
+                      <p className="text-gray-600 mb-4 min-h-[3rem]">
                         Hechten, sterilisatie en andere kleine procedures
                       </p>
-                      <Badge variant="secondary">30 minuten</Badge>
+                      <Badge variant="secondary" className="w-fit">30 minuten</Badge>
                     </CardContent>
                   </Card>
                 </Link>
 
                 <Link href="/diensten/uitslagbesprekingen">
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-2 text-lg">
                         <FileText className="h-5 w-5 text-orange-600" />
                         Uitslagbesprekingen
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600 mb-4">
+                    <CardContent className="flex flex-col justify-between flex-1">
+                      <p className="text-gray-600 mb-4 min-h-[3rem]">
                         Bespreking van laboratorium en onderzoeksresultaten
                       </p>
-                      <Badge variant="secondary">15 minuten</Badge>
+                      <Badge variant="secondary" className="w-fit">15 minuten</Badge>
                     </CardContent>
                   </Card>
                 </Link>
 
                 <Link href="/diensten/intake-nieuwe-patienten">
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-2 text-lg">
                         <Users className="h-5 w-5 text-indigo-600" />
                         Intake Nieuwe Patiënten
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600 mb-4">
+                    <CardContent className="flex flex-col justify-between flex-1">
+                      <p className="text-gray-600 mb-4 min-h-[3rem]">
                         Uitgebreide kennismaking voor nieuwe patiënten
                       </p>
-                      <Badge variant="secondary">45 minuten</Badge>
+                      <Badge variant="secondary" className="w-fit">45 minuten</Badge>
                     </CardContent>
                   </Card>
                 </Link>
