@@ -7,7 +7,6 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,120 +21,12 @@ import {
   Users, 
   Stethoscope,
   ArrowRight,
-  Bell,
   Activity,
   FileText,
-  UserPlus,
-  AlertCircle,
-  CheckCircle,
-  Star
+  CheckCircle
 } from 'lucide-react';
 
-interface QuickStat {
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-  color: string;
-}
-
-interface RecentActivity {
-  id: string;
-  type: 'appointment' | 'patient' | 'message';
-  message: string;
-  time: string;
-  urgent?: boolean;
-}
-
 export default function HomePage() {
-  const [quickStats, setQuickStats] = useState<QuickStat[]>([]);
-  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
-    try {
-      // Mock data - in productie zou dit van de API komen
-      const mockStats: QuickStat[] = [
-        {
-          label: 'Vandaag',
-          value: '24',
-          icon: <Calendar className="h-4 w-4" />,
-          color: 'text-blue-600'
-        },
-        {
-          label: 'Wachtend',
-          value: '8',
-          icon: <Clock className="h-4 w-4" />,
-          color: 'text-orange-600'
-        },
-        {
-          label: 'Patiënten',
-          value: '1,247',
-          icon: <Users className="h-4 w-4" />,
-          color: 'text-green-600'
-        },
-        {
-          label: 'Deze week',
-          value: '156',
-          icon: <CheckCircle className="h-4 w-4" />,
-          color: 'text-purple-600'
-        }
-      ];
-
-      const mockActivities: RecentActivity[] = [
-        {
-          id: '1',
-          type: 'appointment',
-          message: 'Nieuwe afspraak: Maria van der Berg',
-          time: '5 min geleden',
-          urgent: false
-        },
-        {
-          id: '2',
-          type: 'message',
-          message: 'URGENT: Spoedverzoek Emma de Vries',
-          time: '15 min geleden',
-          urgent: true
-        },
-        {
-          id: '3',
-          type: 'patient',
-          message: 'Nieuwe patiënt geregistreerd',
-          time: '30 min geleden'
-        },
-        {
-          id: '4',
-          type: 'appointment',
-          message: 'Afspraak voltooid: Lisa Bakker',
-          time: '45 min geleden'
-        }
-      ];
-
-      setQuickStats(mockStats);
-      setRecentActivities(mockActivities);
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'appointment':
-        return <Calendar className="h-4 w-4 text-blue-500" />;
-      case 'patient':
-        return <UserPlus className="h-4 w-4 text-green-500" />;
-      case 'message':
-        return <Bell className="h-4 w-4 text-orange-500" />;
-      default:
-        return <Activity className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
       <div className="container mx-auto px-4 py-8">
@@ -150,32 +41,8 @@ export default function HomePage() {
         </div>
 
         {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Left Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">          {/* Left Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Quick Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Vandaag Overzicht
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {quickStats.map((stat, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className={stat.color}>
-                        {stat.icon}
-                      </div>
-                      <span className="text-sm text-gray-600">{stat.label}</span>
-                    </div>
-                    <span className="font-semibold">{stat.value}</span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
             {/* Quick Actions */}
             <Card>
               <CardHeader>
@@ -206,35 +73,30 @@ export default function HomePage() {
                     Inloggen
                   </Link>
                 </Button>
-              </CardContent>
-            </Card>
+              </CardContent>            </Card>
 
-            {/* Recent Activities */}
+            {/* Opening Hours */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Bell className="h-5 w-5" />
-                  Recente Activiteit
+                  <Clock className="h-5 w-5" />
+                  Openingstijden
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {recentActivities.slice(0, 4).map((activity) => (
-                    <div key={activity.id} className={`flex items-start gap-3 p-2 rounded-lg ${
-                      activity.urgent ? 'bg-red-50 border border-red-200' : 'bg-gray-50'
-                    }`}>
-                      {getActivityIcon(activity.type)}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {activity.message}
-                        </p>
-                        <p className="text-xs text-gray-500">{activity.time}</p>
-                      </div>
-                      {activity.urgent && (
-                        <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
-                      )}
-                    </div>
-                  ))}
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Maandag - Donderdag</span>
+                    <span>08:00 - 17:00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Vrijdag</span>
+                    <span>08:00 - 16:00</span>
+                  </div>
+                  <div className="flex justify-between text-red-600">
+                    <span>Weekend</span>
+                    <span>Gesloten</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -261,32 +123,6 @@ export default function HomePage() {
                   <div>
                     <p>Gezondheidsstraat 123</p>
                     <p>1234 AB Medstad</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Opening Hours */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Openingstijden
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Maandag - Donderdag</span>
-                    <span>08:00 - 17:00</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Vrijdag</span>
-                    <span>08:00 - 16:00</span>
-                  </div>
-                  <div className="flex justify-between text-red-600">
-                    <span>Weekend</span>
-                    <span>Gesloten</span>
                   </div>
                 </div>
               </CardContent>
@@ -326,101 +162,111 @@ export default function HomePage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
-
-            {/* Services Grid */}
+            </Card>            {/* Services Grid */}
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Onze Diensten</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Stethoscope className="h-5 w-5 text-blue-600" />
-                      Reguliere Consulten
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">
-                      Standaard huisartsconsulten voor alle leeftijden
-                    </p>
-                    <Badge variant="secondary">15 minuten</Badge>
-                  </CardContent>
-                </Card>
+                <Link href="/diensten/reguliere-consulten">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Stethoscope className="h-5 w-5 text-blue-600" />
+                        Reguliere Consulten
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-4">
+                        Standaard huisartsconsulten voor alle leeftijden
+                      </p>
+                      <Badge variant="secondary">15 minuten</Badge>
+                    </CardContent>
+                  </Card>
+                </Link>
 
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Heart className="h-5 w-5 text-red-600" />
-                      Preventieve Zorg
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">
-                      Vaccinaties, controles en gezondheidsscreenings
-                    </p>
-                    <Badge variant="secondary">Verschillende tijden</Badge>
-                  </CardContent>
-                </Card>
+                <Link href="/diensten/preventieve-zorg">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Heart className="h-5 w-5 text-red-600" />
+                        Preventieve Zorg
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-4">
+                        Vaccinaties, controles en gezondheidsscreenings
+                      </p>
+                      <Badge variant="secondary">Verschillende tijden</Badge>
+                    </CardContent>
+                  </Card>
+                </Link>
 
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Phone className="h-5 w-5 text-green-600" />
-                      Telefonisch Consult
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">
-                      Snelle medische vragen via de telefoon
-                    </p>
-                    <Badge variant="secondary">10 minuten</Badge>
-                  </CardContent>
-                </Card>
+                <Link href="/diensten/telefonisch-consult">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Phone className="h-5 w-5 text-green-600" />
+                        Telefonisch Consult
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-4">
+                        Snelle medische vragen via de telefoon
+                      </p>
+                      <Badge variant="secondary">10 minuten</Badge>
+                    </CardContent>
+                  </Card>
+                </Link>
 
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Activity className="h-5 w-5 text-purple-600" />
-                      Kleine Ingrepen
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">
-                      Hechten, sterilisatie en andere kleine procedures
-                    </p>
-                    <Badge variant="secondary">30 minuten</Badge>
-                  </CardContent>
-                </Card>
+                <Link href="/diensten/kleine-ingrepen">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Activity className="h-5 w-5 text-purple-600" />
+                        Kleine Ingrepen
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-4">
+                        Hechten, sterilisatie en andere kleine procedures
+                      </p>
+                      <Badge variant="secondary">30 minuten</Badge>
+                    </CardContent>
+                  </Card>
+                </Link>
 
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-orange-600" />
-                      Uitslagbesprekingen
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">
-                      Bespreking van laboratorium en onderzoeksresultaten
-                    </p>
-                    <Badge variant="secondary">15 minuten</Badge>
-                  </CardContent>
-                </Card>
+                <Link href="/diensten/uitslagbesprekingen">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-orange-600" />
+                        Uitslagbesprekingen
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-4">
+                        Bespreking van laboratorium en onderzoeksresultaten
+                      </p>
+                      <Badge variant="secondary">15 minuten</Badge>
+                    </CardContent>
+                  </Card>
+                </Link>
 
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5 text-indigo-600" />
-                      Intake Nieuwe Patiënten
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">
-                      Uitgebreide kennismaking voor nieuwe patiënten
-                    </p>
-                    <Badge variant="secondary">45 minuten</Badge>
-                  </CardContent>
-                </Card>
+                <Link href="/diensten/intake-nieuwe-patienten">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Users className="h-5 w-5 text-indigo-600" />
+                        Intake Nieuwe Patiënten
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-4">
+                        Uitgebreide kennismaking voor nieuwe patiënten
+                      </p>
+                      <Badge variant="secondary">45 minuten</Badge>
+                    </CardContent>
+                  </Card>
+                </Link>
               </div>
             </div>
 
