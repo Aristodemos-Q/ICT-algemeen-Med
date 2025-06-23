@@ -150,7 +150,7 @@ export default function RegisterPage() {
               Account aanmaken
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              Word lid van het BV Floriande trainers platform
+              Registreer je bij MedCheck+ voor toegang tot het patiëntenportaal
             </p>
           </div>
 
@@ -158,7 +158,7 @@ export default function RegisterPage() {
             <CardHeader>
               <CardTitle>Registreren</CardTitle>
               <CardDescription>
-                Maak een account aan om toegang te krijgen tot het trainingsplatform
+                Maak een patiëntaccount aan voor online afspraken en toegang tot uw medische gegevens
               </CardDescription>
             </CardHeader>
             <CardContent>

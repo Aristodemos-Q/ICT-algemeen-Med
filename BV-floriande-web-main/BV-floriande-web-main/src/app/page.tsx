@@ -47,8 +47,7 @@ export default function HomePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Snelle Acties</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
+              </CardHeader>              <CardContent className="space-y-3">
                 <Button asChild className="w-full justify-start" variant="outline">
                   <Link href="/appointment-booking">
                     <Calendar className="h-4 w-4 mr-2" />
@@ -73,7 +72,13 @@ export default function HomePage() {
                     Inloggen
                   </Link>
                 </Button>
-              </CardContent>            </Card>
+                <Button asChild className="w-full justify-start" variant="outline">
+                  <Link href="/register">
+                    <Users className="h-4 w-4 mr-2" />
+                    Registreren
+                  </Link>
+                </Button>
+              </CardContent></Card>
 
             {/* Opening Hours */}
             <Card>
@@ -141,17 +146,23 @@ export default function HomePage() {
                     </h2>
                     <p className="text-xl opacity-90 mb-6">
                       Moderne zorg met persoonlijke aandacht
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4">
+                    </p>                    <div className="flex flex-col sm:flex-row gap-4">
                       <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
                         <Link href="/appointment-booking">
                           <Calendar className="h-5 w-5 mr-2" />
                           Afspraak Maken
                         </Link>
-                      </Button>                      <Button asChild size="lg" className="bg-blue-700 text-white hover:bg-blue-800">
+                      </Button>
+                      <Button asChild size="lg" className="bg-blue-700 text-white hover:bg-blue-800">
                         <Link href="/login">
                           <ArrowRight className="h-5 w-5 mr-2" />
                           Inloggen voor Patiënt
+                        </Link>
+                      </Button>
+                      <Button asChild size="lg" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                        <Link href="/register">
+                          <Users className="h-5 w-5 mr-2" />
+                          Account Aanmaken
                         </Link>
                       </Button>
                     </div>
