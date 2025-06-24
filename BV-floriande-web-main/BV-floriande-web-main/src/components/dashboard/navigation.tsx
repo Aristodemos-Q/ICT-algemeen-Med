@@ -22,6 +22,9 @@ import {
   MapPin
 } from 'lucide-react';
 
+// Deze component wordt nu vervangen door DashboardSidebar
+// Maar we houden de navigatie items voor backward compatibility
+
 const navigation = [
   { 
     name: 'Oefeningen', 
