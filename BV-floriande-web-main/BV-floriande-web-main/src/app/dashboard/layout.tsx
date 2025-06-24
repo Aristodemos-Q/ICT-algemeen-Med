@@ -9,7 +9,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 
@@ -74,10 +77,22 @@ export default function DashboardLayout({
             toggleSidebar={() => setSidebarOpen(!sidebarOpen)} 
             showMobileToggle={true}
           />
-          
-          <main className="flex-1 p-6">
+            <main className="flex-1 p-6">
             {children}
-          </main>        </div>
+          </main>
+          
+          {/* Footer with back button */}
+          <footer className="border-t bg-white p-4">
+            <div className="flex justify-start">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/" className="text-muted-foreground hover:text-gray-900">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Terug naar Home
+                </Link>
+              </Button>
+            </div>
+          </footer>
+        </div>
       </div>
     </div>
   );

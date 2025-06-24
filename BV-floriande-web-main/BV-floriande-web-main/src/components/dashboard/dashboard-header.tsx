@@ -46,7 +46,7 @@ export default function DashboardHeader({ toggleSidebar, showMobileToggle = fals
           </div>
           <div className="hidden sm:block">
             <h1 className="font-bold text-lg text-gray-900">MedCheck+</h1>
-            <p className="text-xs text-gray-500">Medical Dashboard</p>
+            <p className="text-xs text-gray-500">Patiënt Portal</p>
           </div>
         </Link>
       </div>

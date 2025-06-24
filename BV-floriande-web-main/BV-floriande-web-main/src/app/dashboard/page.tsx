@@ -2,8 +2,7 @@
  * MedCheck+ Medical Practice Portal
  * © 2025 qdela. All rights reserved.
  * 
- * Main Dashboard - Medical Practice Overview
- * Werkproces 2: Automatisering van afspraakprocessen
+ * Patient Dashboard - Personal Medical Overview
  */
 
 'use client';
@@ -14,143 +13,150 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Calendar, 
-  Users, 
   Clock, 
   CheckCircle,
   AlertCircle,
-  TrendingUp,
-  Mail,
-  Phone,
-  FileText,
   Heart,
   Activity,
-  UserCheck,
-  CalendarDays
+  FileText,
+  Pill,
+  CalendarCheck,
+  Stethoscope,
+  MessageSquare,
+  Bell
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
-interface DashboardStats {
-  pendingRequests: number;
-  todayAppointments: number;
-  totalPatients: number;
-  completedAppointments: number;
-  urgentRequests: number;
-  automatedEmails: number;
+interface PatientStats {
+  upcomingAppointments: number;
+  activeMedications: number;
+  lastCheckupDays: number;
+  unreadMessages: number;
+  pendingResults: number;
 }
 
-interface RecentActivity {
+interface PatientActivity {
   id: string;
-  type: 'appointment_request' | 'appointment_completed' | 'email_sent' | 'patient_registered';
+  type: 'appointment_confirmed' | 'test_result' | 'prescription_ready' | 'message_received' | 'reminder';
   message: string;
   timestamp: string;
   urgent?: boolean;
 }
 
-interface TodayAppointment {
+interface UpcomingAppointment {
   id: string;
+  date: string;
   time: string;
-  patient_name: string;
   type: string;
+  doctor_name: string;
+  location: string;
   status: string;
-  doctor_name?: string;
 }
 
-export default function DashboardPage() {
+export default function PatientDashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = useState<DashboardStats>({
-    pendingRequests: 0,
-    todayAppointments: 0,
-    totalPatients: 0,
-    completedAppointments: 0,
-    urgentRequests: 0,
-    automatedEmails: 0
+  const [stats, setStats] = useState<PatientStats>({
+    upcomingAppointments: 0,
+    activeMedications: 0,
+    lastCheckupDays: 0,
+    unreadMessages: 0,
+    pendingResults: 0
   });
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [todayAppointments, setTodayAppointments] = useState<TodayAppointment[]>([]);
+  const [recentActivity, setRecentActivity] = useState<PatientActivity[]>([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState<UpcomingAppointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const userRole = user?.user_metadata?.role || 'assistant';
-
   useEffect(() => {
-    loadDashboardData();
+    loadPatientData();
   }, []);
 
-  const loadDashboardData = async () => {
+  const loadPatientData = async () => {
     try {
       setIsLoading(true);
       
-      // Mock data - in productie zou dit van de API komen
-      const mockStats: DashboardStats = {
-        pendingRequests: 8,
-        todayAppointments: 24,
-        totalPatients: 1247,
-        completedAppointments: 156,
-        urgentRequests: 2,
-        automatedEmails: 45
+      // Mock data voor patiënt dashboard
+      const mockStats: PatientStats = {
+        upcomingAppointments: 2,
+        activeMedications: 3,
+        lastCheckupDays: 5,
+        unreadMessages: 1,
+        pendingResults: 1
       };
 
-      const mockActivity: RecentActivity[] = [
+      const mockActivity: PatientActivity[] = [
         {
           id: '1',
-          type: 'appointment_request',
-          message: 'Nieuwe afspraakverzoek van Maria van der Berg',
-          timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-          urgent: false
+          type: 'appointment_confirmed',
+          message: 'Afspraak bevestigd voor vrijdag 28 juni om 14:30',
+          timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
         },
         {
           id: '2',
-          type: 'email_sent',
-          message: 'Bevestigingsmail verzonden naar Jan Janssen',
-          timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString()
+          type: 'test_result',
+          message: 'Bloedonderzoek resultaten zijn beschikbaar',
+          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          urgent: false
         },
         {
           id: '3',
-          type: 'appointment_request',
-          message: 'URGENT: Spoedverzoek van Emma de Vries',
-          timestamp: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-          urgent: true
+          type: 'prescription_ready',
+          message: 'Medicijn recept klaar voor ophalen bij apotheek',
+          timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
         },
         {
           id: '4',
-          type: 'appointment_completed',
-          message: 'Afspraak voltooid - Lisa Bakker',
-          timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+          type: 'message_received',
+          message: 'Nieuw bericht van Dr. Huisarts ontvangen',
+          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
         },
         {
           id: '5',
-          type: 'patient_registered',
-          message: 'Nieuwe patiënt geregistreerd: Tom de Jong',
-          timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString()
+          type: 'reminder',
+          message: 'Herinnering: Neem uw medicijnen vandaag',
+          timestamp: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString()
         }
       ];
 
-      const mockTodayAppointments: TodayAppointment[] = [
-        { id: '1', time: '09:00', patient_name: 'Maria van der Berg', type: 'Regulier consult', status: 'scheduled', doctor_name: 'Dr. A. Huisarts' },
-        { id: '2', time: '09:15', patient_name: 'Jan Janssen', type: 'Bloeddruk controle', status: 'confirmed', doctor_name: 'Dr. A. Huisarts' },
-        { id: '3', time: '09:30', patient_name: 'Emma de Vries', type: 'Verlengd consult', status: 'in_progress', doctor_name: 'Dr. B. Praktijk' },
-        { id: '4', time: '10:00', patient_name: 'Lisa Bakker', type: 'Uitslagbespreking', status: 'completed', doctor_name: 'Dr. A. Huisarts' },
-        { id: '5', time: '10:30', patient_name: 'Tom de Jong', type: 'Intake nieuw patient', status: 'scheduled', doctor_name: 'Dr. B. Praktijk' }
+      const mockUpcomingAppointments: UpcomingAppointment[] = [
+        { 
+          id: '1', 
+          date: '2025-06-28', 
+          time: '14:30', 
+          type: 'Controle afspraak', 
+          doctor_name: 'Dr. A. Huisarts',
+          location: 'Spreekkamer 1',
+          status: 'confirmed' 
+        },
+        { 
+          id: '2', 
+          date: '2025-07-05', 
+          time: '10:15', 
+          type: 'Bloeddruk meting', 
+          doctor_name: 'Verpleegkundige B. Zorg',
+          location: 'Behandelkamer 2',
+          status: 'scheduled' 
+        }
       ];
 
       setStats(mockStats);
       setRecentActivity(mockActivity);
-      setTodayAppointments(mockTodayAppointments);
+      setUpcomingAppointments(mockUpcomingAppointments);
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
+      console.error('Error loading patient data:', error);
     } finally {
       setIsLoading(false);
     }
   };
-
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'appointment_request': return Calendar;
-      case 'appointment_completed': return CheckCircle;
-      case 'email_sent': return Mail;
-      case 'patient_registered': return UserCheck;
+      case 'appointment_confirmed': return CalendarCheck;
+      case 'test_result': return FileText;
+      case 'prescription_ready': return Pill;
+      case 'message_received': return MessageSquare;
+      case 'reminder': return Bell;
       default: return Activity;
     }
   };
@@ -159,7 +165,6 @@ export default function DashboardPage() {
     switch (status) {
       case 'scheduled': return 'bg-blue-100 text-blue-800';
       case 'confirmed': return 'bg-green-100 text-green-800';
-      case 'in_progress': return 'bg-yellow-100 text-yellow-800';
       case 'completed': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -169,7 +174,6 @@ export default function DashboardPage() {
     switch (status) {
       case 'scheduled': return 'Gepland';
       case 'confirmed': return 'Bevestigd';
-      case 'in_progress': return 'Bezig';
       case 'completed': return 'Voltooid';
       default: return status;
     }
@@ -182,148 +186,120 @@ export default function DashboardPage() {
       </div>
     );
   }
-
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Welkom terug, {user?.user_metadata?.name || user?.email}
+            Welkom terug, {user?.user_metadata?.name || user?.email?.split('@')[0]}
           </h1>
           <p className="text-gray-600">
-            Hier is een overzicht van uw praktijk op {format(new Date(), 'EEEE d MMMM yyyy', { locale: nl })}
+            Hier is uw persoonlijke medische overzicht voor {format(new Date(), 'EEEE d MMMM yyyy', { locale: nl })}
           </p>
         </div>
         <div className="flex gap-3">
           <Button asChild>
-            <Link href="/dashboard/appointment-requests">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              Verzoeken Bekijken
+            <Link href="/dashboard/appointments">
+              <Calendar className="h-4 w-4 mr-2" />
+              Afspraak Maken
             </Link>
           </Button>
-          {userRole === 'admin' && (
-            <Button variant="outline" asChild>
-              <Link href="/dashboard/email-automation">
-                <Mail className="h-4 w-4 mr-2" />
-                E-mail Automation
-              </Link>
-            </Button>
-          )}
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Openstaande Verzoeken</CardTitle>
-            <AlertCircle className="h-4 w-4 text-orange-500" />
+            <CardTitle className="text-sm font-medium">Komende Afspraken</CardTitle>
+            <Calendar className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats.pendingRequests}</div>
+            <div className="text-2xl font-bold text-blue-600">{stats.upcomingAppointments}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.urgentRequests > 0 && (
-                <span className="text-red-600 font-medium">
-                  {stats.urgentRequests} urgent
-                </span>
-              )}
+              Geplande afspraken
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Vandaag Afspraken</CardTitle>
-            <CalendarDays className="h-4 w-4 text-blue-500" />
+            <CardTitle className="text-sm font-medium">Actieve Medicijnen</CardTitle>
+            <Pill className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.todayAppointments}</div>
+            <div className="text-2xl font-bold text-green-600">{stats.activeMedications}</div>
             <p className="text-xs text-muted-foreground">
-              Geplande consulten
+              Voorgeschreven medicijnen
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Totaal Patiënten</CardTitle>
-            <Users className="h-4 w-4 text-green-500" />
+            <CardTitle className="text-sm font-medium">Laatste Controle</CardTitle>
+            <Stethoscope className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalPatients}</div>
+            <div className="text-2xl font-bold text-purple-600">{stats.lastCheckupDays}</div>
             <p className="text-xs text-muted-foreground">
-              Geregistreerde patiënten
+              dagen geleden
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Voltooid Vandaag</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium">Ongelezen Berichten</CardTitle>
+            <MessageSquare className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.completedAppointments}</div>
+            <div className="text-2xl font-bold text-orange-600">{stats.unreadMessages}</div>
             <p className="text-xs text-muted-foreground">
-              Afgeronde consulten
+              nieuwe berichten
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Auto E-mails</CardTitle>
-            <Mail className="h-4 w-4 text-purple-500" />
+            <CardTitle className="text-sm font-medium">Test Resultaten</CardTitle>
+            <FileText className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.automatedEmails}</div>
+            <div className="text-2xl font-bold text-red-600">{stats.pendingResults}</div>
             <p className="text-xs text-muted-foreground">
-              Verzonden vandaag
+              nieuwe resultaten
             </p>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Efficiency</CardTitle>
-            <TrendingUp className="h-4 w-4 text-indigo-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">94%</div>
-            <p className="text-xs text-muted-foreground">
-              Automation rate
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Today's Appointments */}
+      </div>      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Upcoming Appointments */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              Agenda van Vandaag
+              Mijn Komende Afspraken
             </CardTitle>
             <CardDescription>
-              Overzicht van alle afspraken voor vandaag
+              Overzicht van uw geplande afspraken
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {todayAppointments.slice(0, 5).map((appointment) => (
+              {upcomingAppointments.slice(0, 3).map((appointment) => (
                 <div key={appointment.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="text-sm font-medium text-blue-600">
+                      {format(new Date(appointment.date), 'dd MMM', { locale: nl })}
+                      <br />
                       {appointment.time}
                     </div>
                     <div>
-                      <p className="font-medium">{appointment.patient_name}</p>
-                      <p className="text-sm text-gray-500">{appointment.type}</p>
-                      {appointment.doctor_name && (
-                        <p className="text-xs text-gray-400">{appointment.doctor_name}</p>
-                      )}
+                      <p className="font-medium">{appointment.type}</p>
+                      <p className="text-sm text-gray-500">{appointment.doctor_name}</p>
+                      <p className="text-xs text-gray-400">{appointment.location}</p>
                     </div>
                   </div>
                   <Badge className={getStatusColor(appointment.status)}>
@@ -331,14 +307,14 @@ export default function DashboardPage() {
                   </Badge>
                 </div>
               ))}
-              {todayAppointments.length === 0 && (
+              {upcomingAppointments.length === 0 && (
                 <p className="text-center text-gray-500 py-4">
-                  Geen afspraken voor vandaag
+                  Geen geplande afspraken
                 </p>
               )}
             </div>
             <div className="mt-4">
-              <Button variant="outline" asChild className="w-full">
+              <Button asChild className="w-full">
                 <Link href="/dashboard/appointments">
                   Alle Afspraken Bekijken
                 </Link>
@@ -355,7 +331,7 @@ export default function DashboardPage() {
               Recente Activiteit
             </CardTitle>
             <CardDescription>
-              Laatste gebeurtenissen en automatiseringen
+              Laatste updates over uw medische zorg
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -370,7 +346,7 @@ export default function DashboardPage() {
                         {activity.message}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {format(new Date(activity.timestamp), 'HH:mm', { locale: nl })}
+                        {format(new Date(activity.timestamp), 'dd MMM HH:mm', { locale: nl })}
                       </p>
                     </div>
                     {activity.urgent && (
@@ -384,8 +360,8 @@ export default function DashboardPage() {
             </div>
             <div className="mt-4">
               <Button variant="outline" asChild className="w-full">
-                <Link href="/dashboard/activity-log">
-                  Alle Activiteit Bekijken
+                <Link href="/dashboard/medical-records">
+                  Medisch Dossier Bekijken
                 </Link>
               </Button>
             </div>
@@ -393,41 +369,41 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions for Patients */}
       <Card>
         <CardHeader>
           <CardTitle>Snelle Acties</CardTitle>
           <CardDescription>
-            Veelgebruikte functies voor dagelijks gebruik
+            Handige links voor uw medische zorg
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Button asChild variant="outline" className="h-20 flex-col">
-              <Link href="/dashboard/appointment-requests">
-                <AlertCircle className="h-6 w-6 mb-2" />
-                Verzoeken Behandelen
-              </Link>
-            </Button>
-            
-            <Button asChild variant="outline" className="h-20 flex-col">
-              <Link href="/dashboard/patients/new">
-                <Users className="h-6 w-6 mb-2" />
-                Nieuwe Patiënt
-              </Link>
-            </Button>
-            
-            <Button asChild variant="outline" className="h-20 flex-col">
-              <Link href="/dashboard/appointments/new">
+              <Link href="/dashboard/appointments">
                 <Calendar className="h-6 w-6 mb-2" />
-                Afspraak Plannen
+                Afspraak Maken
               </Link>
             </Button>
             
             <Button asChild variant="outline" className="h-20 flex-col">
-              <Link href="/dashboard/email-automation">
-                <Mail className="h-6 w-6 mb-2" />
-                E-mail Templates
+              <Link href="/dashboard/medical-records">
+                <FileText className="h-6 w-6 mb-2" />
+                Mijn Dossier
+              </Link>
+            </Button>
+            
+            <Button asChild variant="outline" className="h-20 flex-col">
+              <Link href="/dashboard/medications">
+                <Pill className="h-6 w-6 mb-2" />
+                Medicijnen
+              </Link>
+            </Button>
+            
+            <Button asChild variant="outline" className="h-20 flex-col">
+              <Link href="/dashboard/reports">
+                <Stethoscope className="h-6 w-6 mb-2" />
+                Test Resultaten
               </Link>
             </Button>
           </div>

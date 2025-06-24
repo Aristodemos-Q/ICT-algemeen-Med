@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
   Calendar, 
-  Users, 
+  FileText, 
   Target, 
   MapPin, 
   CheckCircle, 
@@ -27,7 +27,11 @@ import {
   Clock,
   User,
   Mail,
-  Heart
+  Heart,
+  Pill,
+  History,
+  Home,
+  ArrowLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -36,72 +40,65 @@ const navigation = [
     name: 'Dashboard', 
     href: '/dashboard', 
     icon: Activity,
-    description: 'Overzicht en statistieken'
+    description: 'Mijn overzicht'
   },
   { 
-    name: 'Afspraken', 
+    name: 'Mijn Afspraken', 
     href: '/dashboard/appointments', 
     icon: Calendar,
-    description: 'Patiënt afspraken'
+    description: 'Geplande afspraken'
   },
   { 
-    name: 'Patiënten', 
-    href: '/dashboard/patients', 
-    icon: Users,
-    description: 'Patiënt gegevens'  
+    name: 'Medisch Dossier', 
+    href: '/dashboard/medical-records', 
+    icon: FileText,
+    description: 'Mijn gegevens'  
   },
   { 
-    name: 'Consulten',
-    href: '/dashboard/consultations', 
-    icon: CheckCircle,
-    description: 'Medische consulten'
+    name: 'Medicijnen',
+    href: '/dashboard/medications', 
+    icon: Pill,
+    description: 'Voorschriften'
   },
   { 
-    name: 'Agenda', 
-    href: '/dashboard/calendar', 
-    icon: Clock,
-    description: 'Planning overzicht'
+    name: 'Geschiedenis', 
+    href: '/dashboard/history', 
+    icon: History,
+    description: 'Eerdere consulten'
   },
   { 
     name: 'Rapporten',
     href: '/dashboard/reports',
     icon: TrendingUp,
-    description: 'Medische rapporten'
+    description: 'Test resultaten'
   },
 ];
 
 const adminNavigation = [
   { 
-    name: 'Admin Dashboard',
-    href: '/dashboard/admin', 
-    icon: Shield,
-    description: 'Systeem beheer'
-  },
-  { 
-    name: 'Gebruikersbeheer',
-    href: '/dashboard/admin/user-management', 
-    icon: Users,
-    description: 'Personeel en toegang'
-  },
-  { 
-    name: 'Instellingen',
-    href: '/dashboard/admin/settings', 
+    name: 'Account Instellingen',
+    href: '/dashboard/settings', 
     icon: Settings,
-    description: 'Praktijk instellingen'
+    description: 'Profiel beheren'
+  },
+  { 
+    name: 'Privacy',
+    href: '/dashboard/privacy', 
+    icon: Shield,
+    description: 'Privacy instellingen'
   },
 ];
 
 export function DashboardSidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
-  
-  // Check if user is admin
-  const isAdmin = user?.user_metadata?.role === 'admin' || 
+    // Check if user has admin privileges (for settings access)
+  const hasAdminAccess = user?.user_metadata?.role === 'admin' || 
                   user?.email === 'qdelarambelje@gmail.com' ||
                   user?.email === 'admin@bvfloriande.nl';
 
-  // Combine navigation items
-  const allNavigation = isAdmin ? [...navigation, ...adminNavigation] : navigation;
+  // For patients, show additional settings options if they have admin access
+  const allNavigation = hasAdminAccess ? [...navigation, ...adminNavigation] : navigation;
 
   return (
     <div className="w-80 bg-white shadow-sm border-r min-h-screen">      {/* Logo */}
@@ -109,10 +106,9 @@ export function DashboardSidebar() {
         <Link href="/dashboard" className="flex items-center gap-3">
           <div className="bg-red-500 rounded-lg p-2 shadow-md">
             <Heart className="h-8 w-8 text-white" />
-          </div>
-          <div>
+          </div>          <div>
             <h1 className="font-bold text-lg text-gray-900">MedCheck+</h1>
-            <p className="text-xs text-muted-foreground">Medical Dashboard</p>
+            <p className="text-xs text-muted-foreground">Patiënt Portal</p>
           </div>
         </Link>
       </div>      {/* User Info */}
@@ -124,9 +120,8 @@ export function DashboardSidebar() {
           <div className="flex-1 min-w-0">
             <p className="font-medium text-sm truncate">
               {user?.user_metadata?.name || user?.email}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {user?.user_metadata?.role === 'admin' ? 'Administrator' : 'Medewerker'}
+            </p>            <p className="text-xs text-muted-foreground">
+              {user?.user_metadata?.role === 'admin' ? 'Administrator' : 'Patiënt'}
             </p>
           </div>
         </div>
@@ -175,19 +170,18 @@ export function DashboardSidebar() {
               <TrendingUp className="h-4 w-4" />
               Snel Overzicht
             </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+          </CardHeader>          <CardContent className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Vandaag:</span>
-              <Badge variant="secondary">8 afspraken</Badge>
+              <span className="text-muted-foreground">Komende afspraken:</span>
+              <Badge variant="secondary">2</Badge>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Patiënten:</span>
-              <Badge variant="outline">234</Badge>
+              <span className="text-muted-foreground">Actieve medicijnen:</span>
+              <Badge variant="outline">3</Badge>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Deze week:</span>
-              <Badge variant="default">42 consulten</Badge>
+              <span className="text-muted-foreground">Laatste controle:</span>
+              <Badge variant="default">5 dagen</Badge>
             </div>
           </CardContent>
         </Card>
@@ -195,19 +189,18 @@ export function DashboardSidebar() {
       <div className="p-4 border-t">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
           Recente Activiteit
-        </h3>
-        <div className="space-y-2">
+        </h3>        <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-muted-foreground">Consult voltooid</span>
+            <span className="text-muted-foreground">Afspraak bevestigd</span>
           </div>
           <div className="flex items-center gap-2 text-xs">
             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span className="text-muted-foreground">Nieuwe afspraak</span>
+            <span className="text-muted-foreground">Test resultaat beschikbaar</span>
           </div>
           <div className="flex items-center gap-2 text-xs">
             <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-            <span className="text-muted-foreground">Rapport gegenereerd</span>
+            <span className="text-muted-foreground">Medicijn herinnering</span>
           </div>
         </div>
       </div>      {/* Quick Actions */}
@@ -216,16 +209,26 @@ export function DashboardSidebar() {
           <Button size="sm" className="w-full justify-start bg-red-500 hover:bg-red-600" asChild>
             <Link href="/dashboard/appointments">
               <Calendar className="h-4 w-4 mr-2" />
-              Nieuwe Afspraak
+              Afspraak Maken
             </Link>
           </Button>
           <Button size="sm" variant="outline" className="w-full justify-start" asChild>
-            <Link href="/dashboard/patients">
-              <Users className="h-4 w-4 mr-2" />
-              Patiënt Zoeken
+            <Link href="/dashboard/medical-records">
+              <FileText className="h-4 w-4 mr-2" />
+              Mijn Dossier
             </Link>
           </Button>
         </div>
+      </div>
+
+      {/* Back to Home Button */}
+      <div className="p-4 border-t">
+        <Button size="sm" variant="ghost" className="w-full justify-start text-muted-foreground hover:text-gray-900" asChild>
+          <Link href="/">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Terug naar Home
+          </Link>
+        </Button>
       </div>
     </div>
   );
