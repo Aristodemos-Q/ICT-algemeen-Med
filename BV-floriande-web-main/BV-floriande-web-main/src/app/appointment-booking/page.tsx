@@ -21,7 +21,7 @@ import { Calendar, Clock, MapPin, Phone, Mail, Heart, Stethoscope, User, AlertCi
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import Link from 'next/link';
-import { appointmentTypeQueries, practiceLocationQueries } from '@/lib/medcheck-queries';
+import { appointmentTypeQueries } from '@/lib/medcheck-queries';
 import type { AppointmentType, PracticeLocation, AppointmentBookingForm } from '@/lib/medcheck-types';
 
 interface TimeSlot {
@@ -62,17 +62,38 @@ export default function AppointmentBookingPage() {
     try {
       setIsLoading(true);
       
-      // Try to load real data, fallback to mock data if database is not available
-      try {
-        const [typesData, locationsData] = await Promise.all([
-          appointmentTypeQueries.getActiveTypes(),
-          practiceLocationQueries.getAllLocations()
-        ]);
+      // Fixed location - always SpaarnePoort 5, 2134 TM
+      const fixedLocation: PracticeLocation = {
+        id: '1',
+        name: 'MedCheck+ Huisartsenpraktijk',
+        address: 'SpaarnePoort 5',
+        postal_code: '2134 TM',
+        city: 'Hoofddorp',
+        phone: '023-555-0123',
+        email: 'info@medcheckplus.nl',
+        is_main_location: true,
+        opening_hours: {
+          monday: { open: '08:00', close: '17:00' },
+          tuesday: { open: '08:00', close: '17:00' },
+          wednesday: { open: '08:00', close: '17:00' },
+          thursday: { open: '08:00', close: '17:00' },
+          friday: { open: '08:00', close: '16:00' },
+          saturday: { open: '09:00', close: '12:00' },
+          sunday: { open: 'Gesloten', close: 'Gesloten' }
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
 
+      setLocations([fixedLocation]);
+      
+      // Try to load appointment types from database, fallback to mock data if not available
+      try {
+        const typesData = await appointmentTypeQueries.getActiveTypes();
         setAppointmentTypes(typesData);
-        setLocations(locationsData);
       } catch (dbError) {
-        console.warn('Database not available, using mock data:', dbError);
+        console.warn('Database not available for appointment types, using mock data:', dbError);
+        console.warn('Database not available for appointment types, using mock data:', dbError);
         
         // Mock appointment types
         const mockAppointmentTypes: AppointmentType[] = [
@@ -126,33 +147,7 @@ export default function AppointmentBookingPage() {
           }
         ];
 
-        // Mock location - always SpaarnePoort 5, 2134 TM
-        const mockLocations: PracticeLocation[] = [
-          {
-            id: '1',
-            name: 'MedCheck+ Huisartsenpraktijk',
-            address: 'SpaarnePoort 5',
-            postal_code: '2134 TM',
-            city: 'Hoofddorp',
-            phone: '023-555-0123',
-            email: 'info@medcheckplus.nl',
-            is_main_location: true,
-            opening_hours: {
-              monday: { open: '08:00', close: '17:00' },
-              tuesday: { open: '08:00', close: '17:00' },
-              wednesday: { open: '08:00', close: '17:00' },
-              thursday: { open: '08:00', close: '17:00' },
-              friday: { open: '08:00', close: '16:00' },
-              saturday: { open: '09:00', close: '12:00' },
-              sunday: { open: 'Gesloten', close: 'Gesloten' }
-            },
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        ];
-
         setAppointmentTypes(mockAppointmentTypes);
-        setLocations(mockLocations);
       }
     } catch (err) {
       console.error('Error loading initial data:', err);
