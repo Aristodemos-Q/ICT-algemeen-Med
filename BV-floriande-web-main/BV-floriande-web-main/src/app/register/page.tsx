@@ -34,24 +34,18 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);  useEffect(() => {
-    // Redirect to homepage if user is already logged in
+  const [success, setSuccess] = useState<string | null>(null);
+  const [showLoggedInWarning, setShowLoggedInWarning] = useState(false);
+
+  useEffect(() => {
+    // Show warning if user is already logged in but don't redirect
     if (user) {
-      router.replace('/');
+      setShowLoggedInWarning(true);
     }
-  }, [user, router]);
+  }, [user]);
 
   // Loading state
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  // Als gebruiker al ingelogd is, toon loading terwijl we redirecten
-  if (user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -162,6 +156,15 @@ export default function RegisterPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {showLoggedInWarning && (
+                <Alert className="mb-4 bg-yellow-50 border-yellow-200">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-yellow-800">
+                    Je bent al ingelogd. Als je een nieuw account wilt aanmaken, log dan eerst uit of gebruik een ander e-mailadres.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {error && (
                 <Alert variant="destructive" className="mb-4">
                   <AlertTriangle className="h-4 w-4" />
