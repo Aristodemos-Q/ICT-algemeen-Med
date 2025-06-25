@@ -21,7 +21,6 @@ import { Calendar, Clock, MapPin, Phone, Mail, Heart, Stethoscope, User, AlertCi
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import Link from 'next/link';
-import { appointmentTypeQueries } from '@/lib/medcheck-queries';
 import type { AppointmentType, PracticeLocation, AppointmentBookingForm } from '@/lib/medcheck-types';
 
 interface TimeSlot {
@@ -87,68 +86,83 @@ export default function AppointmentBookingPage() {
 
       setLocations([fixedLocation]);
       
-      // Try to load appointment types from database, fallback to mock data if not available
-      try {
-        const typesData = await appointmentTypeQueries.getActiveTypes();
-        setAppointmentTypes(typesData);
-      } catch (dbError) {
-        console.warn('Database not available for appointment types, using mock data:', dbError);
-        console.warn('Database not available for appointment types, using mock data:', dbError);
-        
-        // Mock appointment types
-        const mockAppointmentTypes: AppointmentType[] = [
-          {
-            id: '1',
-            name: 'Algemeen Consult',
-            description: 'Standaard consult voor algemene klachten en controles',
-            duration_minutes: 15,
-            price: 45.50,
-            color_code: '#3B82F6',
-            requires_doctor: true,
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            id: '2',
-            name: 'Uitgebreid Consult',
-            description: 'Uitgebreid consult voor complexere klachten (30 minuten)',
-            duration_minutes: 30,
-            price: 75.00,
-            color_code: '#10B981',
-            requires_doctor: true,
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            id: '3',
-            name: 'Online Consult',
-            description: 'Videoconsult voor eenvoudige vragen en follow-up',
-            duration_minutes: 10,
-            price: 25.00,
-            color_code: '#8B5CF6',
-            requires_doctor: true,
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            id: '4',
-            name: 'Controle Assistent',
-            description: 'Bloeddruk, gewicht en andere controles door de praktijkassistent',
-            duration_minutes: 10,
-            price: 20.00,
-            color_code: '#F59E0B',
-            requires_doctor: false,
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        ];
+      // Use mock appointment types (database connection not required)
+      const mockAppointmentTypes: AppointmentType[] = [
+        {
+          id: '1',
+          name: 'Regulier consult',
+          description: 'Standaard consult bij de huisarts voor algemene klachten',
+          duration_minutes: 15,
+          price: 39.50,
+          requires_doctor: true,
+          color_code: '#3B82F6',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: '2',
+          name: 'Verlengd consult',
+          description: 'Uitgebreid consult voor complexe problemen of meerdere klachten',
+          duration_minutes: 30,
+          price: 65.00,
+          requires_doctor: true,
+          color_code: '#8B5CF6',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: '3',
+          name: 'Online consult',
+          description: 'Videoconsult vanuit het comfort van uw eigen huis',
+          duration_minutes: 15,
+          price: 35.00,
+          requires_doctor: true,
+          color_code: '#06B6D4',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: '4',
+          name: 'Kleine ingreep',
+          description: 'Kleine medische ingreep zoals wond hechten of steenprik',
+          duration_minutes: 30,
+          price: 75.00,
+          requires_doctor: true,
+          color_code: '#EF4444',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: '5',
+          name: 'Controle door assistente',
+          description: 'Bloeddruk, gewicht en andere controles door de praktijkassistente',
+          duration_minutes: 10,
+          price: 20.00,
+          requires_doctor: false,
+          color_code: '#84CC16',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: '6',
+          name: 'Vaccinatie',
+          description: 'Toediening van vaccin door praktijkassistente',
+          duration_minutes: 10,
+          price: 30.00,
+          requires_doctor: false,
+          color_code: '#F59E0B',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ];
 
-        setAppointmentTypes(mockAppointmentTypes);
-      }
+      setAppointmentTypes(mockAppointmentTypes);
     } catch (err) {
       console.error('Error loading initial data:', err);
       setError('Kon gegevens niet laden. Probeer het later opnieuw.');
