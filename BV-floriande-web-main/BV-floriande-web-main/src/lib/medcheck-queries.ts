@@ -39,7 +39,7 @@ function handleError(error: any, context: string) {
 /**
  * USER MANAGEMENT QUERIES
  */
-export const userQueries = {
+const userQueries = {
   /**
    * Get current logged in user
    */
@@ -105,7 +105,7 @@ export const userQueries = {
 /**
  * PATIENT MANAGEMENT QUERIES
  */
-export const patientQueries = {
+const patientQueries = {
   /**
    * Get all patients with filtering and pagination
    */
@@ -215,7 +215,7 @@ export const patientQueries = {
 /**
  * APPOINTMENT MANAGEMENT QUERIES
  */
-export const appointmentQueries = {
+const appointmentQueries = {
   /**
    * Get appointments with filters
    */
@@ -338,7 +338,7 @@ export const appointmentQueries = {
 /**
  * APPOINTMENT REQUEST MANAGEMENT QUERIES
  */
-export const appointmentRequestQueries = {
+const appointmentRequestQueries = {
   /**
    * Get all appointment requests
    */
@@ -457,7 +457,7 @@ export const appointmentRequestQueries = {
 /**
  * APPOINTMENT TYPES QUERIES
  */
-export const appointmentTypeQueries = {
+const appointmentTypeQueries = {
   /**
    * Get all active appointment types
    */
@@ -480,7 +480,7 @@ export const appointmentTypeQueries = {
 /**
  * PRACTICE LOCATION QUERIES
  */
-export const practiceLocationQueries = {
+const practiceLocationQueries = {
   /**
    * Get all practice locations
    */
@@ -521,7 +521,7 @@ export const practiceLocationQueries = {
 /**
  * DASHBOARD STATISTICS QUERIES
  */
-export const dashboardQueries = {
+const dashboardQueries = {
   /**
    * Get dashboard statistics
    */
@@ -586,7 +586,7 @@ export const dashboardQueries = {
 /**
  * AVAILABILITY QUERIES (Werkproces 2: Automatisering)
  */
-export const availabilityQueries = {
+const availabilityQueries = {
   /**
    * Get available time slots for a specific date and appointment type
    */
@@ -699,7 +699,7 @@ export const availabilityQueries = {
 /**
  * MEDICAL RECORDS QUERIES (Werkproces 3: Database management)
  */
-export const medicalRecordQueries = {
+const medicalRecordQueries = {
   /**
    * Get medical records with filters
    */
@@ -775,7 +775,7 @@ export const medicalRecordQueries = {
 /**
  * PRESCRIPTION QUERIES (Werkproces 3: Database management)
  */
-export const prescriptionQueries = {
+const prescriptionQueries = {
   /**
    * Get prescriptions for a patient
    */
@@ -826,7 +826,7 @@ export const prescriptionQueries = {
 /**
  * AUTOMATION TRACKING QUERIES (Werkproces 2: Process Automation)
  */
-export const automationQueries = {
+const automationQueries = {
   /**
    * Log automation process
    */
@@ -884,7 +884,7 @@ export const automationQueries = {
 /**
  * ENHANCED EMAIL NOTIFICATION QUERIES (Werkproces 2: Process Automation)
  */
-export const emailQueries = {
+const emailQueries = {
   /**
    * Send appointment confirmation email with automation tracking
    */
@@ -1002,7 +1002,7 @@ export const emailQueries = {
 };
 
 // Export enhanced appointment queries with scheduling
-export const enhancedAppointmentQueries = {
+const enhancedAppointmentQueries = {
   ...appointmentQueries,
 
   /**
@@ -1068,12 +1068,11 @@ export const enhancedAppointmentQueries = {
         chief_complaint: request.chief_complaint
       };
 
-      const appointment = await this.createAppointment({
+      const appointment = await appointmentQueries.createAppointment({
         ...appointmentData,
         end_time: endTime.toISOString(),
         status: 'scheduled',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        follow_up_needed: false
       });
 
       // Update request status

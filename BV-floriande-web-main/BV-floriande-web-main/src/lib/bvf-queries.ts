@@ -31,7 +31,7 @@ const handleError = (error: any, customMessage?: string) => {
 /**
  * Functies voor het werken met gebruikers
  */
-export const userQueries = {
+export const bvfUserQueries = {
   /**
    * Haal de huidige ingelogde gebruiker op
    */
@@ -617,7 +617,7 @@ export const dashboardQueries = {
 
 // Alle queries exporteren als één object
 export const bvfQueries = {
-  users: userQueries,
+  users: bvfUserQueries,
   groups: groupQueries,
   exercises: exerciseQueries,
   sessions: sessionQueries,
