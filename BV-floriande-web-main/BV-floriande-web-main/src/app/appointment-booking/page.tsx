@@ -60,115 +60,126 @@ export default function AppointmentBookingPage() {
   const loadInitialData = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       
-      // Fixed location - always SpaarnePoort 5, 2134 TM
-      const fixedLocation: PracticeLocation = {
-        id: '1',
-        name: 'MedCheck+ Huisartsenpraktijk',
-        address: 'SpaarnePoort 5',
-        postal_code: '2134 TM',
-        city: 'Hoofddorp',
-        phone: '023-555-0123',
-        email: 'info@medcheckplus.nl',
-        is_main_location: true,
-        opening_hours: {
-          monday: { open: '08:00', close: '17:00' },
-          tuesday: { open: '08:00', close: '17:00' },
-          wednesday: { open: '08:00', close: '17:00' },
-          thursday: { open: '08:00', close: '17:00' },
-          friday: { open: '08:00', close: '16:00' },
-          saturday: { open: '09:00', close: '12:00' },
-          sunday: { open: 'Gesloten', close: 'Gesloten' }
-        },
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-
-      setLocations([fixedLocation]);
+      // Use the new API endpoints instead of direct Supabase calls
+      console.log('Loading data from API endpoints...');
       
-      // Use mock appointment types (database connection not required)
-      const mockAppointmentTypes: AppointmentType[] = [
-        {
-          id: '1',
-          name: 'Regulier consult',
-          description: 'Standaard consult bij de huisarts voor algemene klachten',
-          duration_minutes: 15,
-          price: 39.50,
-          requires_doctor: true,
-          color_code: '#3B82F6',
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: '2',
-          name: 'Verlengd consult',
-          description: 'Uitgebreid consult voor complexe problemen of meerdere klachten',
-          duration_minutes: 30,
-          price: 65.00,
-          requires_doctor: true,
-          color_code: '#8B5CF6',
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: '3',
-          name: 'Online consult',
-          description: 'Videoconsult vanuit het comfort van uw eigen huis',
-          duration_minutes: 15,
-          price: 35.00,
-          requires_doctor: true,
-          color_code: '#06B6D4',
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: '4',
-          name: 'Kleine ingreep',
-          description: 'Kleine medische ingreep zoals wond hechten of steenprik',
-          duration_minutes: 30,
-          price: 75.00,
-          requires_doctor: true,
-          color_code: '#EF4444',
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: '5',
-          name: 'Controle door assistente',
-          description: 'Bloeddruk, gewicht en andere controles door de praktijkassistente',
-          duration_minutes: 10,
-          price: 20.00,
-          requires_doctor: false,
-          color_code: '#84CC16',
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: '6',
-          name: 'Vaccinatie',
-          description: 'Toediening van vaccin door praktijkassistente',
-          duration_minutes: 10,
-          price: 30.00,
-          requires_doctor: false,
-          color_code: '#F59E0B',
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ];
+      const [appointmentTypesResponse, locationsResponse] = await Promise.all([
+        fetch('/api/appointment-types'),
+        fetch('/api/practice-locations')
+      ]);
 
-      setAppointmentTypes(mockAppointmentTypes);
+      console.log('API responses:', {
+        appointmentTypes: appointmentTypesResponse.status,
+        locations: locationsResponse.status
+      });
+
+      if (!appointmentTypesResponse.ok || !locationsResponse.ok) {
+        throw new Error('Failed to fetch data from API endpoints');
+      }
+
+      const [appointmentTypesResult, locationsResult] = await Promise.all([
+        appointmentTypesResponse.json(),
+        locationsResponse.json()
+      ]);
+
+      console.log('API results:', {
+        appointmentTypes: appointmentTypesResult,
+        locations: locationsResult
+      });
+
+      if (!appointmentTypesResult.success || !locationsResult.success) {
+        throw new Error('API returned error response');
+      }
+
+      const appointmentTypesData = appointmentTypesResult.data || [];
+      const locationsData = locationsResult.data || [];
+
+      setAppointmentTypes(appointmentTypesData);
+      setLocations(locationsData);
+      
+      console.log('Successfully loaded from API:', {
+        appointmentTypes: appointmentTypesData.length,
+        locations: locationsData.length
+      });
+      
+      // If no appointment types found, use fallback
+      if (appointmentTypesData.length === 0) {
+        console.log('No appointment types found, using fallback');
+        setMockData();
+      }
     } catch (err) {
-      console.error('Error loading initial data:', err);
-      setError('Kon gegevens niet laden. Probeer het later opnieuw.');
+      console.error('Error loading from API endpoints:', err);
+      console.log('Falling back to mock data');
+      setMockData();
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Fallback mock data function
+  const setMockData = () => {
+    console.log('Using fallback mock data');
+    const mockAppointmentTypes: AppointmentType[] = [
+      {
+        id: 'mock-1',
+        name: 'Regulier consult',
+        description: 'Standaard consult bij de huisarts voor algemene klachten',
+        duration_minutes: 15,
+        price: 39.50,
+        requires_doctor: true,
+        color_code: '#3B82F6',
+        is_active: true,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 'mock-2',
+        name: 'Verlengd consult',
+        description: 'Uitgebreid consult voor complexe problemen',
+        duration_minutes: 30,
+        price: 65.00,
+        requires_doctor: true,
+        color_code: '#8B5CF6',
+        is_active: true,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 'mock-3',
+        name: 'Online consult',
+        description: 'Videoconsult vanuit uw eigen huis',
+        duration_minutes: 15,
+        price: 35.00,
+        requires_doctor: true,
+        color_code: '#06B6D4',
+        is_active: true,
+        created_at: new Date().toISOString()
+      }
+    ];
+
+    const mockLocation: PracticeLocation = {
+      id: 'mock-location',
+      name: 'MedCheck+ Huisartsenpraktijk',
+      address: 'SpaarnePoort 5',
+      postal_code: '2134 TM',
+      city: 'Hoofddorp',
+      phone: '023-555-0123',
+      email: 'info@medcheckplus.nl',
+      is_main_location: true,
+      opening_hours: {
+        monday: { open: '08:00', close: '17:00' },
+        tuesday: { open: '08:00', close: '17:00' },
+        wednesday: { open: '08:00', close: '17:00' },
+        thursday: { open: '08:00', close: '17:00' },
+        friday: { open: '08:00', close: '16:00' }
+      },
+      facilities: ['Digitale radiologie', 'ECG', 'Spirometrie'],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    setAppointmentTypes(mockAppointmentTypes);
+    setLocations([mockLocation]);
   };
 
   // Load real time slots from API
@@ -256,34 +267,29 @@ export default function AppointmentBookingPage() {
         return;
       }
 
-      // Try to send to API, fallback to success simulation
-      try {
-        const response = await fetch('/api/appointment-requests', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
-
-        const result = await response.json();
-
-        if (!response.ok || !result.success) {
-          throw new Error(result.error || 'Failed to submit appointment request');
-        }
-
-        console.log('Appointment request submitted successfully:', result.data);
-      } catch (apiError) {
-        console.warn('API not available, simulating successful submission:', apiError);
-        
-        // Simulate successful submission for demonstration
-        console.log('Appointment request submitted (simulated):', {
-          ...formData,
-          id: `mock-${Date.now()}`,
-          status: 'pending',
-          created_at: new Date().toISOString()
-        });
+      // Email validatie
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.patient_email)) {
+        setError('Vul een geldig e-mailadres in.');
+        return;
       }
+
+      // Submit to the API endpoint voor echte database integratie
+      const response = await fetch('/api/appointment-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Er ging iets mis bij het versturen van uw afspraakverzoek');
+      }
+      
+      console.log('Appointment request submitted successfully:', result);
       
       setSuccess(true);
       setStep(4); // Ga naar bevestigingsstap

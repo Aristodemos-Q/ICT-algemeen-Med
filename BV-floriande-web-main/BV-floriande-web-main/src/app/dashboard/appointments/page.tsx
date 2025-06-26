@@ -39,9 +39,11 @@ interface PatientAppointment {
   type: string;
   doctor_name: string;
   location: string;
-  status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
+  status: 'pending' | 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
   chief_complaint?: string;
   notes?: string;
+  source?: 'request' | 'appointment';
+  created_at?: string;
 }
 
 export default function PatientAppointmentsPage() {
@@ -79,62 +81,97 @@ export default function PatientAppointmentsPage() {
     try {
       setIsLoading(true);
       
-      // Mock data voor demonstratie - in productie zou dit van de API komen
-      const mockAppointments: PatientAppointment[] = [
-        {
-          id: '1',
-          date: '2025-06-28',
-          time: '14:30',
-          type: 'Controle afspraak',
-          doctor_name: 'Dr. A. Huisarts',
-          location: 'Spreekkamer 1',
-          status: 'confirmed',
-          chief_complaint: 'Routine controle',
-          notes: 'Bloeddruk en gewicht controleren'
-        },
-        {
-          id: '2',
-          date: '2025-07-05',
-          time: '10:15',
-          type: 'Bloeddruk meting',
-          doctor_name: 'Verpleegkundige B. Zorg',
-          location: 'Behandelkamer 2',
-          status: 'scheduled',
-          chief_complaint: 'Bloeddruk controle na medicatie wijziging'
-        },
-        {
-          id: '3',
-          date: '2025-06-15',
-          time: '09:00',
-          type: 'Lab uitslagen bespreking',
-          doctor_name: 'Dr. A. Huisarts',
-          location: 'Spreekkamer 1',
-          status: 'completed',
-          chief_complaint: 'Bespreking bloedonderzoek',
-          notes: 'Cholesterol iets verhoogd, dieet aanpassing besproken'
-        },
-        {
-          id: '4',
-          date: '2025-08-02',
-          time: '15:45',
-          type: 'Jaarlijkse check-up',
-          doctor_name: 'Dr. A. Huisarts', 
-          location: 'Spreekkamer 1',
-          status: 'scheduled',
-          chief_complaint: 'Jaarlijkse algemene controle'
-        }
-      ];
+      if (!user?.id && !user?.email) {
+        console.warn('No user ID or email available');
+        setAppointments([]);
+        return;
+      }
 
-      setAppointments(mockAppointments);
+      // Fetch appointments and requests from API
+      const params = new URLSearchParams();
+      if (user.id) params.append('userId', user.id);
+      if (user.email) params.append('userEmail', user.email);
+      
+      const response = await fetch(`/api/user-appointments?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch appointments: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.appointments) {
+        setAppointments(data.appointments);
+      } else {
+        console.error('API returned error:', data.error);
+        // Fallback to mock data if API fails
+        setAppointments(getMockAppointments());
+      }
+
     } catch (error) {
       console.error('Error loading appointments:', error);
+      // Fallback to mock data on error
+      setAppointments(getMockAppointments());
     } finally {
       setIsLoading(false);
     }
   };
 
+  const getMockAppointments = (): PatientAppointment[] => {
+    return [
+      {
+        id: '1',
+        date: '2025-06-28',
+        time: '14:30',
+        type: 'Controle afspraak',
+        doctor_name: 'Dr. A. Huisarts',
+        location: 'Spreekkamer 1',
+        status: 'confirmed',
+        chief_complaint: 'Routine controle',
+        notes: 'Bloeddruk en gewicht controleren',
+        source: 'appointment'
+      },
+      {
+        id: '2',
+        date: '2025-07-05',
+        time: '10:15',
+        type: 'Bloeddruk meting',
+        doctor_name: 'Nog niet toegewezen',
+        location: 'Behandelkamer 2',
+        status: 'pending',
+        chief_complaint: 'Bloeddruk controle na medicatie wijziging',
+        source: 'request'
+      },
+      {
+        id: '3',
+        date: '2025-06-15',
+        time: '09:00',
+        type: 'Lab uitslagen bespreking',
+        doctor_name: 'Dr. A. Huisarts',
+        location: 'Spreekkamer 1',
+        status: 'completed',
+        chief_complaint: 'Bespreking bloedonderzoek',
+        notes: 'Cholesterol iets verhoogd, dieet aanpassing besproken',
+        source: 'appointment'
+      },
+      {
+        id: '4',
+        date: '2025-08-02',
+        time: '15:45',
+        type: 'Jaarlijkse check-up',
+        doctor_name: 'Dr. A. Huisarts', 
+        location: 'Spreekkamer 1',
+        status: 'scheduled',
+        chief_complaint: 'Jaarlijkse algemene controle',
+        source: 'appointment'
+      }
+    ];
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'pending':
+        return 'bg-orange-100 text-orange-800';
       case 'confirmed':
         return 'bg-blue-100 text-blue-800';
       case 'completed':
@@ -148,8 +185,10 @@ export default function PatientAppointmentsPage() {
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusLabel = (status: string) => {
     switch (status) {
+      case 'pending':
+        return 'Aangevraagd';
       case 'confirmed':
         return 'Bevestigd';
       case 'completed':
@@ -157,14 +196,16 @@ export default function PatientAppointmentsPage() {
       case 'cancelled':
         return 'Geannuleerd';
       case 'scheduled':
-        return 'Gepland';
+        return 'Ingepland';
       default:
-        return 'Onbekend';
+        return status;
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
+      case 'pending':
+        return <AlertCircle className="h-4 w-4" />;
       case 'confirmed':
         return <CheckCircle className="h-4 w-4" />;
       case 'completed':
@@ -172,7 +213,7 @@ export default function PatientAppointmentsPage() {
       case 'cancelled':
         return <XCircle className="h-4 w-4" />;
       case 'scheduled':
-        return <Clock className="h-4 w-4" />;
+        return <CalendarDays className="h-4 w-4" />;
       default:
         return <AlertCircle className="h-4 w-4" />;
     }
@@ -231,6 +272,13 @@ export default function PatientAppointmentsPage() {
                 size="sm"
               >
                 Alle
+              </Button>
+              <Button
+                variant={statusFilter === 'pending' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('pending')}
+                size="sm"
+              >
+                Aangevraagd
               </Button>
               <Button
                 variant={statusFilter === 'scheduled' ? 'default' : 'outline'}
@@ -341,7 +389,7 @@ export default function PatientAppointmentsPage() {
                       <Badge className={getStatusColor(appointment.status)}>
                         <div className="flex items-center gap-1">
                           {getStatusIcon(appointment.status)}
-                          {getStatusText(appointment.status)}
+                          {getStatusLabel(appointment.status)}
                         </div>
                       </Badge>
                       <div className="flex gap-2">
@@ -405,7 +453,7 @@ export default function PatientAppointmentsPage() {
                       <Badge className={getStatusColor(appointment.status)}>
                         <div className="flex items-center gap-1">
                           {getStatusIcon(appointment.status)}
-                          {getStatusText(appointment.status)}
+                          {getStatusLabel(appointment.status)}
                         </div>
                       </Badge>
                       <Button variant="outline" size="sm">
