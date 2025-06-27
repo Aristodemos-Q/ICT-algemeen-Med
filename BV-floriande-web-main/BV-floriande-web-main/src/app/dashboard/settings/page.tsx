@@ -335,21 +335,7 @@ export default function SettingsPage() {
                       </p>
                     </div>
                     
-                    <div>
-                      <Label htmlFor="user-role">{t('role')}</Label>
-                      <Input 
-                        id="user-role"
-                        type="text" 
-                        className="w-full p-2 rounded bg-background border"
-                        value={user?.user_metadata?.role || 'User'}
-                        disabled
-                        title={t('yourCurrentRole')}
-                        placeholder={t('yourCurrentRole')}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {t('contactAdminForRoles')}
-                      </p>
-                    </div>
+
 
                     <div className="flex gap-2">
                       <Button 
@@ -380,19 +366,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
-                
-                <div className="pt-4 border-t">
-                  <h3 className="text-sm font-medium mb-2">{t('sessions')}</h3>
-                  <div className="bg-muted/30 p-3 rounded-md mb-3">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-sm font-medium">{t('currentSession')}</p>
-                        <p className="text-xs text-muted-foreground">Windows • Chrome • IP: 192.168.1.1</p>
-                      </div>
-                      <div className="text-xs text-primary">{t('activeNow')}</div>
-                    </div>
-                  </div>
-                </div>
+
               </TabsContent>
 
               <TabsContent value="notifications" className="space-y-6">
@@ -546,22 +520,6 @@ export default function SettingsPage() {
                     <Check className="h-4 w-4 mr-1" />
                     <span className="text-sm">{t('settingsSaved')}</span>
                   </div>
-                )}
-                {/* Toast Test Button - only in development */}
-                {process.env.NODE_ENV === 'development' && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => addToast({
-                      type: 'info',
-                      title: 'Toast Test',
-                      message: 'This is a test notification to verify the toast system is working!',
-                      duration: 3000
-                    })}
-                    className="text-xs"
-                  >
-                    Test Toast
-                  </Button>
                 )}
               </div>
               <Button 
