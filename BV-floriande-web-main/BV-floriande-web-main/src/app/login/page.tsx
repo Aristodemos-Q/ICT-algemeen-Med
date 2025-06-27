@@ -62,7 +62,12 @@ function LoginPageContent() {
       checkConnection();    // Redirect to dashboard if user is already logged in
     if (user) {
       console.log('User session found:', user);
-      router.replace('/dashboard');
+      const redirectPath = searchParams.get('redirect');
+      if (redirectPath) {
+        router.replace(redirectPath);
+      } else {
+        router.replace('/dashboard');
+      }
     }
   }, [user, router, searchParams]);
 

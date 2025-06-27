@@ -10,7 +10,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,6 +26,7 @@ export default function LoginForm() {
   
   const { login, error, clearError } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +40,15 @@ export default function LoginForm() {
 
     try {
       await login(email, password);
-      // Login function in AuthContext will handle the redirect
+      
+      // Handle redirect after successful login
+      const redirectPath = searchParams.get('redirect');
+      if (redirectPath) {
+        setTimeout(() => {
+          router.push(redirectPath);
+        }, 200);
+      }
+      // If no redirect, AuthContext will handle the default redirect to dashboard
     } catch (error) {
       console.error('Login error:', error);
       // Error wordt getoond via AuthContext

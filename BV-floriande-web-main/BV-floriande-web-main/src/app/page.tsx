@@ -49,7 +49,7 @@ export default function HomePage() {
                 <CardTitle className="text-lg">Snelle Acties</CardTitle>
               </CardHeader>              <CardContent className="space-y-3">
                 <Button asChild className="w-full justify-start" variant="outline">
-                  <Link href="/appointment-booking">
+                  <Link href="/login?redirect=/appointment-booking">
                     <Calendar className="h-4 w-4 mr-2" />
                     Nieuwe Afspraak
                   </Link>
@@ -148,7 +148,7 @@ export default function HomePage() {
                       Moderne zorg met persoonlijke aandacht
                     </p>                    <div className="flex flex-col sm:flex-row gap-4">
                       <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
-                        <Link href="/appointment-booking">
+                        <Link href="/login?redirect=/appointment-booking">
                           <Calendar className="h-5 w-5 mr-2" />
                           Afspraak Maken
                         </Link>
@@ -351,7 +351,7 @@ export default function HomePage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button asChild size="lg">
-                    <Link href="/appointment-booking">
+                    <Link href="/login?redirect=/appointment-booking">
                       <Calendar className="h-5 w-5 mr-2" />
                       Online Afspraak Maken
                     </Link>

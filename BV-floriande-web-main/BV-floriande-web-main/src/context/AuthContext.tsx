@@ -81,11 +81,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {  const [us
           setLoading(false); // Set loading to false after user state is updated
             // Handle redirects based on auth state
           if (event === 'SIGNED_IN' && session?.user) {
-            console.log('✅ SIGNED_IN event - redirecting to dashboard');
-            // Small delay to ensure state is fully updated
+            console.log('✅ SIGNED_IN event - checking for redirect');
+            // Only redirect to dashboard if no custom redirect is planned
+            // Small delay to allow custom redirects to happen first
             setTimeout(() => {
-              router.push('/dashboard');
-            }, 150);
+              // Check if the page has already changed (custom redirect happened)
+              if (window.location.pathname === '/login') {
+                console.log('🏠 No custom redirect detected, going to dashboard');
+                router.push('/dashboard');
+              } else {
+                console.log('✅ Custom redirect detected, staying on current page');
+              }
+            }, 300);
           } else if (event === 'SIGNED_OUT') {
             console.log('🚪 SIGNED_OUT event - redirecting to login');
             router.push('/login');
