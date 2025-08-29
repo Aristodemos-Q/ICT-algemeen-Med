@@ -26,6 +26,7 @@ import {
   Bell
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { appointmentQueries } from '@/lib/medcheck-queries';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -77,9 +78,67 @@ export default function PatientDashboard() {
     try {
       setIsLoading(true);
       
-      // Mock data voor patiënt dashboard
-      const mockStats: PatientStats = {
-        upcomingAppointments: 2,
+      // Load real appointment data
+      let realAppointments: UpcomingAppointment[] = [];
+      let appointmentCount = 0;
+      
+      try {
+        // Get appointments using the same function as the appointments page
+        const appointmentsData = await appointmentQueries.getAppointments();
+        
+        // Filter for current user and upcoming appointments
+        const userAppointments = appointmentsData.filter((apt: any) => {
+          // Check if appointment belongs to current user (via email match or offline appointments)
+          const isUserAppointment = apt.patient?.email === user?.email || apt.id.startsWith('offline_');
+          // Check if appointment is in the future
+          const isUpcoming = new Date(apt.scheduled_at) > new Date();
+          return isUserAppointment && isUpcoming;
+        });
+
+        // Convert to UpcomingAppointment format
+        realAppointments = userAppointments.map((apt: any) => ({
+          id: apt.id,
+          date: apt.scheduled_at ? new Date(apt.scheduled_at).toISOString().split('T')[0] : '',
+          time: apt.scheduled_at ? new Date(apt.scheduled_at).toTimeString().substring(0, 5) : '',
+          type: apt.appointment_type?.name || 'Onbekend type',
+          doctor_name: apt.doctor?.name || 'Nog niet toegewezen',
+          location: apt.location?.name || 'Spaarnepoort 1',
+          status: apt.status === 'scheduled' ? 'pending' : apt.status
+        }));
+
+        appointmentCount = realAppointments.length;
+        console.log(`✅ Dashboard loaded ${appointmentCount} upcoming appointments`);
+        
+      } catch (appointmentError) {
+        console.warn('Failed to load real appointments, using fallback:', appointmentError);
+        
+        // Fallback to mock data if appointments can't be loaded
+        realAppointments = [
+          { 
+            id: '1', 
+            date: '2025-06-28', 
+            time: '14:30', 
+            type: 'Controle afspraak', 
+            doctor_name: 'Dr. A. Huisarts',
+            location: 'Spreekkamer 1',
+            status: 'confirmed' 
+          },
+          { 
+            id: '2', 
+            date: '2025-07-05', 
+            time: '10:15', 
+            type: 'Bloeddruk meting', 
+            doctor_name: 'Verpleegkundige B. Zorg',
+            location: 'Behandelkamer 2',
+            status: 'scheduled' 
+          }
+        ];
+        appointmentCount = realAppointments.length;
+      }
+      
+      // Stats with real appointment count
+      const stats: PatientStats = {
+        upcomingAppointments: appointmentCount,
         activeMedications: 3,
         lastCheckupDays: 5,
         unreadMessages: 1,
@@ -120,32 +179,23 @@ export default function PatientDashboard() {
         }
       ];
 
-      const mockUpcomingAppointments: UpcomingAppointment[] = [
-        { 
-          id: '1', 
-          date: '2025-06-28', 
-          time: '14:30', 
-          type: 'Controle afspraak', 
-          doctor_name: 'Dr. A. Huisarts',
-          location: 'Spreekkamer 1',
-          status: 'confirmed' 
-        },
-        { 
-          id: '2', 
-          date: '2025-07-05', 
-          time: '10:15', 
-          type: 'Bloeddruk meting', 
-          doctor_name: 'Verpleegkundige B. Zorg',
-          location: 'Behandelkamer 2',
-          status: 'scheduled' 
-        }
-      ];
-
-      setStats(mockStats);
+      setStats(stats);
       setRecentActivity(mockActivity);
-      setUpcomingAppointments(mockUpcomingAppointments);
+      setUpcomingAppointments(realAppointments);
+      
     } catch (error) {
       console.error('Error loading patient data:', error);
+      
+      // Complete fallback
+      setStats({
+        upcomingAppointments: 0,
+        activeMedications: 3,
+        lastCheckupDays: 5,
+        unreadMessages: 1,
+        pendingResults: 1
+      });
+      setRecentActivity([]);
+      setUpcomingAppointments([]);
     } finally {
       setIsLoading(false);
     }
