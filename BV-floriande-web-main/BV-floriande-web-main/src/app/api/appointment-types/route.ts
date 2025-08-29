@@ -1,52 +1,33 @@
-/*
- * MedCheck+ Medical Practice Portal
- * © 2025 qdela. All rights reserved.
- * 
- * API Route: Appointment Types
- * Public endpoint for fetching appointment types
- */
-
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseServer } from '@/lib/supabaseServer';
 
-// Use service role for API operations to bypass RLS
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
+// Required for static export
+export const dynamic = 'force-static';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    // Get appointment types
-    const { data: appointmentTypes, error: typesError } = await supabase
+    const { data: appointmentTypes, error } = await supabaseServer
       .from('appointment_types')
       .select('*')
       .eq('is_active', true)
       .order('name');
-
-    if (typesError) {
-      console.error('Database error:', typesError);
-      return NextResponse.json(
-        { error: 'Failed to fetch appointment types' },
-        { status: 500 }
-      );
+    
+    if (error) {
+      console.error('Error fetching appointment types:', error);
+      throw error;
     }
-
+    
     return NextResponse.json({
       success: true,
       data: appointmentTypes || []
     });
-
   } catch (error) {
-    console.error('API error:', error);
+    console.error('Error fetching appointment types:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        success: false, 
+        error: 'Failed to fetch appointment types' 
+      },
       { status: 500 }
     );
   }

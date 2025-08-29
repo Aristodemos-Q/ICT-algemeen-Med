@@ -12,12 +12,14 @@ export default function TestSupabaseConnection() {
       try {
         // Check environment variables (client-side only gets NEXT_PUBLIC_* vars)
         const envVars = {
-          url: typeof window !== 'undefined' && (window as any).location ? 'Set (client)' : 'Unknown',
-          key: 'Present (hidden for security)',
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+          supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
           debug: process.env.NEXT_PUBLIC_DEBUG,
           nodeEnv: process.env.NODE_ENV
         };
         setEnvironmentVars(envVars);
+
+        console.log('Environment variables:', envVars);
 
         // Test Supabase connection
         console.log('Testing Supabase connection...');
@@ -47,8 +49,12 @@ export default function TestSupabaseConnection() {
         <div className="p-4 border rounded">
           <h2 className="text-lg font-semibold mb-2">Environment Variables</h2>
           <ul className="space-y-1">
-            <li>NEXT_PUBLIC_SUPABASE_URL: <span className="text-green-600">Set</span></li>
-            <li>NEXT_PUBLIC_SUPABASE_ANON_KEY: <span className="text-green-600">Set</span></li>
+            <li>NEXT_PUBLIC_SUPABASE_URL: <span className={environmentVars.supabaseUrl ? 'text-green-600' : 'text-red-600'}>
+              {environmentVars.supabaseUrl ? `Set (${environmentVars.supabaseUrl.substring(0, 30)}...)` : 'NOT SET'}
+            </span></li>
+            <li>NEXT_PUBLIC_SUPABASE_ANON_KEY: <span className={environmentVars.supabaseKey ? 'text-green-600' : 'text-red-600'}>
+              {environmentVars.supabaseKey ? `Set (${environmentVars.supabaseKey.substring(0, 30)}...)` : 'NOT SET'}
+            </span></li>
             <li>NODE_ENV: {environmentVars.nodeEnv || 'development'}</li>
             <li>DEBUG: {environmentVars.debug || 'true'}</li>
           </ul>

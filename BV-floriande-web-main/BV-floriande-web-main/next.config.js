@@ -4,22 +4,12 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
   },
-  // Add headers to help with CORS and caching
-  async headers() {
-    return [
-      {
-        source: '/api/:path*',
-        headers: [
-          { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, DELETE, OPTIONS' },
-          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
-        ],
-      },
-    ];
-  },
-  // Improve error handling for API routes
-  async rewrites() {
-    return [];
+  // Configuration for Firebase deployment (static export mode)
+  output: process.env.BUILD_ENV === 'firebase' ? 'export' : undefined,
+  trailingSlash: process.env.BUILD_ENV === 'firebase' ? true : false,
+  distDir: process.env.BUILD_ENV === 'firebase' ? 'out' : '.next',
+  images: {
+    unoptimized: process.env.BUILD_ENV === 'firebase' ? true : false,
   },
   // Add webpack configuration for better error handling
   webpack: (config, { dev, isServer }) => {
@@ -30,7 +20,5 @@ const nextConfig = {
     return config;
   },
 };
-
-module.exports = nextConfig;
 
 module.exports = nextConfig;

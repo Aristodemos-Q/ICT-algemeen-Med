@@ -32,6 +32,8 @@ import {
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { useAuth } from '@/context/AuthContext';
+import { appointmentRequestQueries, debugQueries } from '@/lib/medcheck-queries';
+import type { AppointmentRequest as AppointmentRequestType } from '@/lib/medcheck-types';
 
 interface AppointmentRequest {
   id: string;
@@ -74,71 +76,75 @@ export default function AppointmentRequestsPage() {
 
   useEffect(() => {
     loadAppointmentRequests();
+    // Run debug test to check database connection
+    testDatabaseConnection();
   }, []);
+  
+  const testDatabaseConnection = async () => {
+    try {
+      console.log('🧪 Running database connection test...');
+      const testResult = await debugQueries.testConnection();
+      console.log('🔍 Database test result:', testResult);
+    } catch (error) {
+      console.error('❌ Database test failed:', error);
+    }
+  };
 
   const loadAppointmentRequests = async () => {
     try {
       setIsLoading(true);
       
-      // Mock data - in productie van API
-      const mockRequests: AppointmentRequest[] = [
-        {
-          id: '1',
-          patient_name: 'Maria van der Berg',
-          patient_email: 'maria@example.com',
-          patient_phone: '06-12345678',
-          patient_birth_date: '1985-03-15',
+      console.log('🔍 Loading appointment requests...');
+      
+      // Load appointment requests directly from Supabase with better error handling
+      console.log('� Calling appointmentRequestQueries.getAllRequests()...');
+      const appointmentRequests = await appointmentRequestQueries.getAllRequests();
+      console.log('📄 Raw appointment requests data:', appointmentRequests);
+      
+      // Check if we got data
+      if (!appointmentRequests) {
+        console.warn('⚠️ No appointment requests data returned');
+        setRequests([]);
+        return;
+      }
+      
+      // Transform Supabase data to match our interface
+      const transformedRequests: AppointmentRequest[] = appointmentRequests.map((req: any) => {
+        console.log('🔄 Transforming request:', req.id, req.patient_name);
+        return {
+          id: req.id,
+          patient_name: req.patient_name,
+          patient_email: req.patient_email,
+          patient_phone: req.patient_phone,
+          patient_birth_date: req.patient_birth_date,
           appointment_type: {
-            name: 'Regulier consult',
-            duration_minutes: 15,
-            color_code: '#3B82F6'
+            name: req.appointment_type?.name || 'Onbekend type',
+            duration_minutes: req.appointment_type?.duration_minutes || 15,
+            color_code: req.appointment_type?.color_code || '#3B82F6'
           },
-          preferred_date: '2025-01-25',
-          preferred_time: '10:00',
-          chief_complaint: 'Hoofdpijn en koorts sinds 2 dagen. Mogelijk griep.',
-          urgency: 'normal',
-          status: 'pending',
-          created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          id: '2',
-          patient_name: 'Emma de Vries',
-          patient_email: 'emma@example.com',
-          patient_phone: '06-87654321',
-          appointment_type: {
-            name: 'Verlengd consult',
-            duration_minutes: 30,
-            color_code: '#8B5CF6'
-          },
-          preferred_date: '2025-01-24',
-          chief_complaint: 'Aanhoudende buikpijn, mogelijk IBS gerelateerd. Wil uitgebreide bespreking.',
-          urgency: 'urgent',
-          status: 'pending',
-          created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString()
-        },
-        {
-          id: '3',
-          patient_name: 'Jan Janssen',
-          patient_email: 'jan@example.com',
-          appointment_type: {
-            name: 'Bloeddruk controle',
-            duration_minutes: 10,
-            color_code: '#84CC16'
-          },
-          preferred_date: '2025-01-26',
-          preferred_time: '14:30',
-          chief_complaint: 'Routine bloeddruk controle na medicatie aanpassing.',
-          urgency: 'low',
-          status: 'approved',
-          created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-          processed_by: 'Dr. A. Huisarts',
-          processed_at: new Date(Date.now() - 60 * 60 * 1000).toISOString()
-        }
-      ];
-
-      setRequests(mockRequests);
-    } catch (error) {
-      console.error('Error loading appointment requests:', error);
+          preferred_date: req.preferred_date,
+          preferred_time: req.preferred_time,
+          chief_complaint: req.chief_complaint || '',
+          urgency: req.urgency || 'normal',
+          status: req.status,
+          created_at: req.created_at,
+          processed_by: req.processed_by,
+          processed_at: req.processed_at,
+          rejection_reason: req.rejection_reason
+        };
+      });
+      
+      console.log(`✅ Successfully transformed ${transformedRequests.length} requests`);
+      setRequests(transformedRequests);
+    } catch (error: any) {
+      console.error('❌ Error loading appointment requests:', {
+        error,
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name
+      });
+      // Fallback to empty array on error
+      setRequests([]);
     } finally {
       setIsLoading(false);
     }
@@ -146,14 +152,15 @@ export default function AppointmentRequestsPage() {
 
   const handleApproveRequest = async (requestId: string) => {
     try {
-      // Update status to approved and prepare for scheduling
-      setRequests(prev => 
-        prev.map(req => 
-          req.id === requestId 
-            ? { ...req, status: 'approved', processed_by: user?.email, processed_at: new Date().toISOString() }
-            : req
-        )
+      // Update request status in Supabase
+      await appointmentRequestQueries.processRequest(
+        requestId, 
+        'approved', 
+        user?.id || user?.email || ''
       );
+      
+      // Reload requests to get updated data
+      await loadAppointmentRequests();
       
       // Send automatic approval email
       await sendAutomaticEmail(requestId, 'approved');
@@ -178,19 +185,16 @@ export default function AppointmentRequestsPage() {
 
   const handleRejectRequest = async (requestId: string, reason: string) => {
     try {
-      setRequests(prev => 
-        prev.map(req => 
-          req.id === requestId 
-            ? { 
-                ...req, 
-                status: 'rejected', 
-                rejection_reason: reason,
-                processed_by: user?.email, 
-                processed_at: new Date().toISOString() 
-              }
-            : req
-        )
+      // Update request status in Supabase
+      await appointmentRequestQueries.processRequest(
+        requestId, 
+        'rejected', 
+        user?.id || user?.email || '',
+        reason
       );
+      
+      // Reload requests to get updated data
+      await loadAppointmentRequests();
       
       // Send automatic rejection email
       await sendAutomaticEmail(requestId, 'rejected', reason);

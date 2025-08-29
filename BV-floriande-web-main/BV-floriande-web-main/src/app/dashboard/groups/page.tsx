@@ -12,7 +12,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { groupService } from '@/lib/bvf-services';
 import { useAuth } from '@/context/AuthContext';
-import type { Group } from '@/lib/database-types';
+import type { Group, User } from '@/lib/database-types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -35,7 +35,7 @@ interface GroupTrainer {
   };
 }
 
-interface User {
+interface TrainerUser {
   id: string;
   email: string;
   user_metadata?: {
@@ -46,7 +46,7 @@ interface User {
 export default function GroupsPage() {
   const { user } = useAuth();
   const [groups, setGroups] = useState<GroupWithTrainers[]>([]);
-  const [trainers, setTrainers] = useState<User[]>([]);
+  const [trainers, setTrainers] = useState<TrainerUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddMemberForm, setShowAddMemberForm] = useState(false);
@@ -344,20 +344,20 @@ export default function GroupsPage() {
                         <option value="">Trainer toevoegen...</option>
                         {trainers
                           .filter(trainer => 
-                            !group.trainers?.some(gt => gt.trainer_id === trainer.id)
+                            !group.group_trainers?.some(gt => gt.trainer_id === trainer.id)
                           )
                           .map(trainer => (
                             <option key={trainer.id} value={trainer.id}>
-                              {trainer.name}
+                              {trainer.user_metadata?.name || trainer.email}
                             </option>
                           ))
                         }
                       </select>
                     </div>
                     <div className="space-y-1">
-                      {group.trainers?.map((groupTrainer) => (
+                      {group.group_trainers?.map((groupTrainer) => (
                         <div key={groupTrainer.id} className="flex justify-between items-center text-xs bg-gray-50 p-2 rounded">
-                          <span>{groupTrainer.trainer?.name}</span>
+                          <span>{groupTrainer.trainer?.name || 'Onbekende trainer'}</span>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -368,7 +368,7 @@ export default function GroupsPage() {
                           </Button>
                         </div>
                       ))}
-                      {(!group.trainers || group.trainers.length === 0) && (
+                      {(!group.group_trainers || group.group_trainers.length === 0) && (
                         <p className="text-xs text-muted-foreground">Geen trainers toegewezen</p>
                       )}
                     </div>

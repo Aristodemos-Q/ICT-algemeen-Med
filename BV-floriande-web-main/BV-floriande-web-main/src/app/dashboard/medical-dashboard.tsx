@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/lib/supabaseClient';
 import { 
   Users, 
   Calendar, 
@@ -20,7 +21,8 @@ import {
   TrendingUp,
   Stethoscope,
   FileText,
-  Phone
+  Phone,
+  Activity
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { 
@@ -123,7 +125,7 @@ export default function MedicalDashboard() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600">
-            Welkom terug, {user?.name}. Hier is een overzicht van vandaag.
+            Welkom terug, {user?.user_metadata?.name || user?.email}. Hier is een overzicht van vandaag.
           </p>
         </div>
         <div className="flex items-center gap-2 text-sm text-green-600">

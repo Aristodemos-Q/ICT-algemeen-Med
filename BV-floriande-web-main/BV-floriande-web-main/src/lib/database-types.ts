@@ -6,6 +6,9 @@
  * Transformed from BV Floriande to support medical appointments and patient management
  */
 
+// Add AttendanceStatus type
+export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
+
 export interface User {
   id: string;
   name: string;

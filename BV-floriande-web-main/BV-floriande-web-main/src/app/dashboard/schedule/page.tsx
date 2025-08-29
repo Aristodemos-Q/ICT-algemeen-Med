@@ -273,7 +273,7 @@ export default function SchedulePage() {
                           <div className="flex items-center gap-2 text-sm">
                             <Users className="h-4 w-4 text-primary" />
                             <span className="font-medium">Groep:</span>
-                            <Link href={`/dashboard/groups/${session.group.id}`}>
+                            <Link href="/dashboard/groups">
                               <Badge variant="outline" className="hover:bg-primary hover:text-white cursor-pointer">
                                 {session.group.name} ({session.group.level})
                               </Badge>
@@ -361,7 +361,7 @@ export default function SchedulePage() {
               </div>
             </div>
             <div className="mt-6 flex gap-2">
-              <Link href={`/dashboard/groups/${selectedSession.group.id}`}>
+              <Link href="/dashboard/groups">
                 <Button variant="outline" className="flex-1">Groep Details</Button>
               </Link>
               <Button onClick={() => setSelectedSession(null)} className="flex-1">

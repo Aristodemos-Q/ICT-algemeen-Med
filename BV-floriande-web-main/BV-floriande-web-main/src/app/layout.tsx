@@ -22,9 +22,9 @@ import ChunkLoadingBootstrapLite from "@/components/chunk-loading-bootstrap-lite
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "BV Floriande - Trainers Platform",
+  title: "MedCheck+",
   description:
-    "Platform voor trainers van BV Floriande om oefeningen, aanwezigheid en groepsevaluaties bij te houden.",
+    "Medische praktijk management portaal voor patiënten, artsen en assistentes om afspraken en medische gegevens te beheren.",
 };
 
 export default function RootLayout({

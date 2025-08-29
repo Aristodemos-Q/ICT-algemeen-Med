@@ -47,6 +47,7 @@ import {
   dashboardQueries, 
   appointmentRequestQueries, 
   appointmentTypeQueries,
+  appointmentQueries,
   enhancedAppointmentQueries,
   automationQueries 
 } from '@/lib/medcheck-queries';
@@ -72,6 +73,7 @@ export default function MedicalDashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('overview');
   const [processingRequest, setProcessingRequest] = useState<string | null>(null);
@@ -228,7 +230,7 @@ export default function MedicalDashboardPage() {
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">MedCheck+ Dashboard</h1>
                 <p className="text-gray-600 mt-1">
-                  Welkom terug, {user?.name || 'Dokter'}
+                  Welkom terug, {user?.email || 'Dokter'}
                 </p>
               </div>
               <div className="flex items-center gap-4">
@@ -538,92 +540,6 @@ export default function MedicalDashboardPage() {
                             className="text-red-600 border-red-200 hover:bg-red-50"
                           >
                             <XCircle className="h-4 w-4 mr-2" />
-                            Afwijzen
-                          </Button>
-                          
-                          <Button variant="outline">
-                            <Mail className="h-4 w-4 mr-2" />
-                            Contact
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-
-                    {dashboardData.pendingRequests.length === 0 && (
-                      <div className="text-center py-12">
-                        <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          Alle verzoeken behandeld!
-                        </h3>
-                        <p className="text-gray-600">
-                          Er zijn momenteel geen afspraakverzoeken die behandeling vereisen.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Appointments Tab */}
-            <TabsContent value="appointments" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Afspraken Beheer</CardTitle>
-                  <CardDescription>
-                    Bekijk en beheer alle geplande afspraken
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-12">
-                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      Afspraken Kalender
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                      Hier komt een interactieve kalender voor afsprakenbeheer
-                    </p>
-                    <Button asChild>
-                      <Link href="/dashboard/calendar">
-                        Naar Kalender
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Patients Tab */}
-            <TabsContent value="patients" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Patiënten Overzicht</CardTitle>
-                  <CardDescription>
-                    Zoek en beheer patiëntgegevens
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-12">
-                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      Patiëntendatabase
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                      Hier komt het patiëntenbeheer systeem
-                    </p>
-                    <Button disabled>
-                      Binnenkort beschikbaar
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    </ProtectedRoute>
-  );
-}
                             Afwijzen
                           </Button>
                           

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Offline Appointments</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        button { padding: 10px 15px; margin: 5px; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Offline Appointments Debug Tool</h1>
+    
+    <div class="section">
+        <h2>LocalStorage Inspection</h2>
+        <button onclick="showOfflineRequests()">Show Offline Appointment Requests</button>
+        <button onclick="clearOfflineRequests()">Clear Offline Requests</button>
+        <button onclick="addTestRequest()">Add Test Request</button>
+        <pre id="storageContent"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Test Data</h2>
+        <pre id="testResults"></pre>
+    </div>
+
+    <script>
+        function showOfflineRequests() {
+            const requests = localStorage.getItem('offline_appointment_requests');
+            const content = document.getElementById('storageContent');
+            
+            if (requests) {
+                try {
+                    const parsed = JSON.parse(requests);
+                    content.textContent = JSON.stringify(parsed, null, 2);
+                    console.log('Offline appointment requests:', parsed);
+                } catch (e) {
+                    content.textContent = 'Error parsing: ' + requests;
+                }
+            } else {
+                content.textContent = 'No offline appointment requests found';
+            }
+        }
+
+        function clearOfflineRequests() {
+            localStorage.removeItem('offline_appointment_requests');
+            document.getElementById('storageContent').textContent = 'Cleared offline requests';
+            console.log('Cleared offline appointment requests');
+        }
+
+        function addTestRequest() {
+            const testRequest = {
+                id: `offline-request-${Date.now()}-test123`,
+                patient_name: 'Test Patient',
+                patient_email: 'test@example.com',
+                patient_phone: '0612345678',
+                patient_birth_date: '1990-01-01',
+                appointment_type_id: 'fixed-type-algemeen',
+                preferred_date: new Date().toISOString(),
+                preferred_time: '10:00',
+                alternative_dates: [],
+                chief_complaint: 'Test klacht voor debugging',
+                urgency: 'normal',
+                status: 'pending',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                appointment_type: {
+                    id: 'fixed-type-algemeen',
+                    name: 'Algemene afspraak',
+                    description: '',
+                    duration_minutes: 15,
+                    color_code: '#3B82F6',
+                    is_active: true,
+                    requires_doctor: true,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                }
+            };
+
+            const existing = JSON.parse(localStorage.getItem('offline_appointment_requests') || '[]');
+            existing.push(testRequest);
+            localStorage.setItem('offline_appointment_requests', JSON.stringify(existing));
+            
+            document.getElementById('testResults').textContent = 'Added test request:\n' + JSON.stringify(testRequest, null, 2);
+            console.log('Added test appointment request:', testRequest);
+        }
+
+        // Auto-load on page load
+        window.onload = function() {
+            showOfflineRequests();
+        };
+    </script>
+</body>
+</html>

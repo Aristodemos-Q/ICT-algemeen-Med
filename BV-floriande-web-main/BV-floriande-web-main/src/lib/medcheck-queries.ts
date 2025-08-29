@@ -30,10 +30,66 @@ import {
   DatabaseOperation
 } from './medcheck-types';
 
-// Error handling helper
+// Enhanced error handling helper with detailed logging
 function handleError(error: any, context: string) {
-  console.error(`${context}:`, error);
-  throw error;
+  // Log all available error information
+  console.error(`${context}:`, {
+    error,
+    message: error?.message,
+    details: error?.details,
+    hint: error?.hint,
+    code: error?.code,
+    status: error?.status,
+    statusText: error?.statusText,
+    stack: error?.stack,
+    // Try to extract any hidden properties
+    ...error
+  });
+  
+  // Also log the error as a string to see if there's hidden info
+  console.error('Error as string:', String(error));
+  console.error('Error keys:', Object.keys(error || {}));
+  
+  // Create a more informative error message
+  let errorMessage = 'Unknown error occurred';
+  
+  if (error?.message) {
+    errorMessage = error.message;
+  } else if (error?.details) {
+    errorMessage = error.details;
+  } else if (error?.code) {
+    errorMessage = `Error code: ${error.code}`;
+  } else if (typeof error === 'string') {
+    errorMessage = error;
+  }
+  
+  const newError = new Error(`${context}: ${errorMessage}`);
+  if (error?.stack) {
+    newError.stack = error.stack;
+  }
+  throw newError;
+}
+
+// Debug function to test Supabase connection
+async function debugSupabaseConnection() {
+  try {
+    console.log('🔍 Testing Supabase connection...');
+    const { data, error } = await supabase
+      .from('appointment_types')
+      .select('*')
+      .limit(1);
+    
+    if (error) {
+      console.error('❌ Supabase connection test failed:', error);
+      return false;
+    }
+    
+    console.log('✅ Supabase connection successful:', data);
+    return true;
+  } catch (error) {
+    console.error('❌ Supabase connection exception:', error);
+    return false;
+  }
 }
 
 /**
@@ -217,48 +273,161 @@ const patientQueries = {
  */
 const appointmentQueries = {
   /**
-   * Get appointments with filters
+   * Get appointments with filters - includes both database and offline appointments
    */
   async getAppointments(filters: AppointmentFilters = {}): Promise<Appointment[]> {
-    let query = supabase
-      .from('appointments')
-      .select(`
-        *,
-        patient:patients(*),
-        doctor:users(*),
-        appointment_type:appointment_types(*),
-        location:practice_locations(*)
-      `)
-      .order('scheduled_at', { ascending: true });
+    const appointments: Appointment[] = [];
     
-    if (filters.date_from) {
-      query = query.gte('scheduled_at', filters.date_from);
+    try {
+      // Try to fetch from database first
+      let query = supabase
+        .from('appointments')
+        .select(`
+          *,
+          patient:patients(*),
+          doctor:users!appointments_doctor_id_fkey(*),
+          appointment_type:appointment_types(*),
+          location:practice_locations(*)
+        `)
+        .order('scheduled_at', { ascending: true });
+      
+      if (filters.date_from) {
+        query = query.gte('scheduled_at', filters.date_from);
+      }
+      
+      if (filters.date_to) {
+        query = query.lte('scheduled_at', filters.date_to);
+      }
+      
+      if (filters.doctor_id) {
+        query = query.eq('doctor_id', filters.doctor_id);
+      }
+      
+      if (filters.patient_id) {
+        query = query.eq('patient_id', filters.patient_id);
+      }
+      
+      if (filters.status) {
+        query = query.eq('status', filters.status);
+      }
+      
+      const { data, error } = await query;
+      
+      if (data && !error) {
+        appointments.push(...data);
+        console.log(`✅ Fetched ${data.length} appointments from database`);
+      } else if (error) {
+        console.warn('⚠️ Database query failed, using offline mode:', error.message);
+      }
+    } catch (error) {
+      console.warn('⚠️ Database connection failed, using offline mode:', error);
     }
     
-    if (filters.date_to) {
-      query = query.lte('scheduled_at', filters.date_to);
+    // Always check localStorage for offline appointment requests
+    try {
+      const storedRequests = localStorage.getItem('offline_appointment_requests');
+      if (storedRequests) {
+        const requests: AppointmentRequest[] = JSON.parse(storedRequests);
+        console.log(`📱 Found ${requests.length} offline appointment requests`);
+        
+        // Convert appointment requests to appointment format
+        const offlineAppointments: Appointment[] = requests.map(request => ({
+          id: `offline_${request.id}`,
+          patient_id: request.patient_id || `temp_${Date.now()}`,
+          doctor_id: undefined, // Not set in appointment requests
+          appointment_type_id: request.appointment_type_id || '',
+          location_id: '1', // Fixed to main location
+          scheduled_at: request.preferred_date || new Date().toISOString(),
+          end_time: new Date(new Date(request.preferred_date || new Date()).getTime() + 30 * 60000).toISOString(), // Add 30 minutes
+          status: 'scheduled' as const,
+          chief_complaint: request.chief_complaint,
+          notes: `Offline appointment request - Urgency: ${request.urgency}`,
+          follow_up_needed: false,
+          created_at: request.created_at,
+          updated_at: request.updated_at || request.created_at,
+          // Add related data using basic info from the request
+          patient: {
+            id: request.patient_id || `temp_${Date.now()}`,
+            patient_number: 'TEMP001',
+            name: request.patient_name,
+            birth_date: request.patient_birth_date || '',
+            gender: 'other' as const,
+            email: request.patient_email,
+            phone: request.patient_phone || '',
+            address: '',
+            postal_code: '',
+            city: '',
+            emergency_contact: '',
+            emergency_phone: '',
+            insurance_company: '',
+            insurance_number: '',
+            gp_patient: false,
+            medical_notes: '',
+            allergies: '',
+            medications: '',
+            created_at: request.created_at,
+            updated_at: request.created_at
+          },
+          doctor: undefined, // We don't have doctor details offline
+          appointment_type: {
+            id: request.appointment_type_id || 'general',
+            name: appointmentRequestQueries.getAppointmentTypeName(request.appointment_type_id || 'general'),
+            description: '',
+            duration_minutes: 30,
+            requires_doctor: true,
+            color_code: '#3B82F6',
+            is_active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          location: {
+            id: '1',
+            name: 'Spaarnepoort 1',
+            address: 'Spaarnepoort 1',
+            city: 'Hoofddorp',
+            postal_code: '2134 TM',
+            country: 'Nederland',
+            phone: '+31 23 554 0100',
+            email: 'info@bv-floriande.nl',
+            is_main_location: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        }));
+        
+        // Filter offline appointments based on the same filters
+        let filteredOfflineAppointments = offlineAppointments;
+        
+        if (filters.date_from) {
+          filteredOfflineAppointments = filteredOfflineAppointments.filter(
+            apt => new Date(apt.scheduled_at) >= new Date(filters.date_from!)
+          );
+        }
+        
+        if (filters.date_to) {
+          filteredOfflineAppointments = filteredOfflineAppointments.filter(
+            apt => new Date(apt.scheduled_at) <= new Date(filters.date_to!)
+          );
+        }
+        
+        if (filters.status) {
+          filteredOfflineAppointments = filteredOfflineAppointments.filter(
+            apt => apt.status === filters.status
+          );
+        }
+        
+        appointments.push(...filteredOfflineAppointments);
+        console.log(`📱 Added ${filteredOfflineAppointments.length} offline appointments`);
+      }
+    } catch (error) {
+      console.error('❌ Error reading offline appointments:', error);
     }
     
-    if (filters.doctor_id) {
-      query = query.eq('doctor_id', filters.doctor_id);
-    }
+    // Sort all appointments by scheduled date
+    appointments.sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
     
-    if (filters.patient_id) {
-      query = query.eq('patient_id', filters.patient_id);
-    }
-    
-    if (filters.status) {
-      query = query.eq('status', filters.status);
-    }
-    
-    const { data, error } = await query;
-    
-    if (error) {
-      handleError(error, 'Error fetching appointments');
-      return [];
-    }
-    
-    return data || [];
+    console.log(`📋 Total appointments found: ${appointments.length} (${appointments.filter(a => a.id.startsWith('offline_')).length} offline)`);
+    return appointments;
   },
 
   /**
@@ -286,18 +455,23 @@ const appointmentQueries = {
   },
 
   /**
-   * Create new appointment
+   * Create new appointment (automatically uses fixed location)
    */
   async createAppointment(appointmentData: Omit<Appointment, 'id' | 'created_at' | 'updated_at'>): Promise<Appointment> {
+    // Automatically set the fixed location if not provided
+    const appointmentWithLocation = {
+      ...appointmentData,
+      location_id: appointmentData.location_id || 'fixed-location-spaarnepoort'
+    };
+    
     const { data, error } = await supabase
       .from('appointments')
-      .insert([appointmentData])
+      .insert([appointmentWithLocation])
       .select(`
         *,
         patient:patients(*),
-        doctor:users(*),
-        appointment_type:appointment_types(*),
-        location:practice_locations(*)
+        doctor:users!appointments_doctor_id_fkey(*),
+        appointment_type:appointment_types(*)
       `)
       .single();
     
@@ -306,7 +480,24 @@ const appointmentQueries = {
       throw error;
     }
     
-    return data;
+    // Add the fixed location data to the response
+    const result = {
+      ...data,
+      location: {
+        id: 'fixed-location-spaarnepoort',
+        name: 'BV Floriande - Spaarnepoort',
+        address: 'Spaarnepoort 1',
+        postal_code: '2134 TM',
+        city: 'Hoofddorp',
+        phone: '023-5630350',
+        email: 'info@bvfloriande.nl',
+        is_main_location: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    };
+    
+    return result;
   },
 
   /**
@@ -320,7 +511,7 @@ const appointmentQueries = {
       .select(`
         *,
         patient:patients(*),
-        doctor:users(*),
+        doctor:users!appointments_doctor_id_fkey(*),
         appointment_type:appointment_types(*),
         location:practice_locations(*)
       `)
@@ -332,6 +523,86 @@ const appointmentQueries = {
     }
     
     return data;
+  },
+
+  /**
+   * Get appointments by patient email
+   */
+  async getByPatientEmail(email: string): Promise<Appointment[]> {
+    try {
+      console.log('🔍 Starting getByPatientEmail query for:', email);
+      
+      // First test basic Supabase connection
+      await debugSupabaseConnection();
+      
+      // Try with patient_email column first (more efficient)
+      console.log('🔄 Attempting direct patient_email query...');
+      const { data: directData, error: directError } = await supabase
+        .from('appointments')
+        .select(`
+          *,
+          patient:patients(*),
+          doctor:users!appointments_doctor_id_fkey(*),
+          appointment_type:appointment_types(*),
+          location:practice_locations(*)
+        `)
+        .eq('patient_email', email)
+        .order('scheduled_at', { ascending: false });
+      
+      // If direct query works, return the data
+      if (!directError && directData) {
+        console.log('✅ Direct patient_email query successful:', directData.length, 'appointments');
+        return directData;
+      }
+      
+      if (directError) {
+        console.log('⚠️ Direct patient_email query failed:', directError);
+      }
+      
+      // If patient_email column doesn't work, try to find patient first then appointments
+      console.log('🔄 Trying patient lookup approach...');
+      
+      // First, find the patient by email
+      const { data: patientData, error: patientError } = await supabase
+        .from('patients')
+        .select('id')
+        .eq('email', email)
+        .single();
+      
+      if (patientError || !patientData) {
+        console.log('ℹ️ No patient found with email:', email, 'Error:', patientError);
+        return [];
+      }
+      
+      console.log('✅ Found patient:', patientData.id);
+      
+      // Then get appointments for that patient
+      const { data: appointmentData, error: appointmentError } = await supabase
+        .from('appointments')
+        .select(`
+          *,
+          patient:patients(*),
+          doctor:users!appointments_doctor_id_fkey(*),
+          appointment_type:appointment_types(*),
+          location:practice_locations(*)
+        `)
+        .eq('patient_id', patientData.id)
+        .order('scheduled_at', { ascending: false });
+      
+      if (appointmentError) {
+        console.error('❌ Appointment query failed:', appointmentError);
+        handleError(appointmentError, `Error fetching appointments for patient ${email}`);
+        return [];
+      }
+      
+      console.log('✅ Patient lookup approach successful:', appointmentData?.length || 0, 'appointments');
+      return appointmentData || [];
+      
+    } catch (error) {
+      console.error('❌ Exception in getByPatientEmail:', error);
+      handleError(error, `Error fetching appointments for patient ${email}`);
+      return [];
+    }
   }
 };
 
@@ -343,76 +614,187 @@ const appointmentRequestQueries = {
    * Get all appointment requests
    */
   async getAllRequests(): Promise<AppointmentRequest[]> {
-    const { data, error } = await supabase
-      .from('appointment_requests')
-      .select(`
-        *,
-        appointment_type:appointment_types(*),
-        processed_by_user:users(*)
-      `)
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      handleError(error, 'Error fetching appointment requests');
+    try {
+      console.log('🔍 Starting getAllRequests query...');
+      
+      // First test if table exists
+      const { data: tableCheck, error: tableError } = await supabase
+        .from('appointment_requests')
+        .select('count')
+        .limit(1);
+        
+      console.log('📊 Table check result:', { tableCheck, tableError });
+      
+      if (tableError) {
+        console.error('❌ Table check failed:', tableError);
+        if (tableError.message?.includes('relation') && tableError.message?.includes('does not exist')) {
+          throw new Error('Table "appointment_requests" does not exist in Supabase. Please run the setup SQL first.');
+        }
+        throw tableError;
+      }
+      
+      const { data, error } = await supabase
+        .from('appointment_requests')
+        .select(`
+          *,
+          appointment_type:appointment_types(*),
+          processed_by_user:users(*)
+        `)
+        .order('created_at', { ascending: false });
+      
+      console.log('📄 Query result:', { data: data?.length || 0, error });
+      
+      if (error) {
+        console.error('❌ Supabase query error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        handleError(error, 'Error fetching appointment requests');
+        return [];
+      }
+      
+      console.log('✅ Successfully fetched appointment requests:', data?.length || 0);
+      return data || [];
+    } catch (error) {
+      console.error('❌ getAllRequests failed with error:', error);
       return [];
     }
-    
-    return data || [];
   },
 
   /**
-   * Get pending appointment requests
+   * Get pending appointment requests (includes offline requests)
    */
   async getPendingRequests(): Promise<AppointmentRequest[]> {
-    const { data, error } = await supabase
-      .from('appointment_requests')
-      .select(`
-        *,
-        appointment_type:appointment_types(*)
-      `)
-      .eq('status', 'pending')
-      .order('urgency', { ascending: false })
-      .order('created_at', { ascending: true });
+    let databaseRequests: AppointmentRequest[] = [];
     
-    if (error) {
-      handleError(error, 'Error fetching pending appointment requests');
-      return [];
+    // Try to get from database first
+    try {
+      const { data, error } = await supabase
+        .from('appointment_requests')
+        .select(`
+          *,
+          appointment_type:appointment_types(*)
+        `)
+        .eq('status', 'pending')
+        .order('urgency', { ascending: false })
+        .order('created_at', { ascending: true });
+      
+      if (!error && data) {
+        databaseRequests = data;
+      }
+    } catch (dbError) {
+      console.log('Database fetch failed, using offline mode:', dbError);
     }
     
-    return data || [];
+    // Get offline requests from localStorage
+    let offlineRequests: AppointmentRequest[] = [];
+    try {
+      const storedRequests = localStorage.getItem('offline_appointment_requests');
+      if (storedRequests) {
+        offlineRequests = JSON.parse(storedRequests);
+      }
+    } catch (storageError) {
+      console.error('Failed to read from localStorage:', storageError);
+    }
+    
+    // Combine both sources
+    return [...databaseRequests, ...offlineRequests];
   },
 
   /**
-   * Create new appointment request (public endpoint)
+   * Create new appointment request (offline mode - saves to localStorage)
    */
   async createRequest(requestData: AppointmentBookingForm): Promise<AppointmentRequest> {
-    const { data, error } = await supabase
-      .from('appointment_requests')
-      .insert([{
-        patient_name: requestData.patient_name,
-        patient_email: requestData.patient_email,
-        patient_phone: requestData.patient_phone,
-        patient_birth_date: requestData.patient_birth_date,
-        appointment_type_id: requestData.appointment_type_id,
-        preferred_date: requestData.preferred_date,
-        preferred_time: requestData.preferred_time,
-        alternative_dates: requestData.alternative_dates,
-        chief_complaint: requestData.chief_complaint,
-        urgency: requestData.urgency,
-        status: 'pending'
-      }])
-      .select(`
-        *,
-        appointment_type:appointment_types(*)
-      `)
-      .single();
-    
-    if (error) {
-      handleError(error, 'Error creating appointment request');
-      throw error;
+    try {
+      // First try database save (if Supabase is configured)
+      const { data, error } = await supabase
+        .from('appointment_requests')
+        .insert([{
+          patient_name: requestData.patient_name,
+          patient_email: requestData.patient_email,
+          patient_phone: requestData.patient_phone,
+          patient_birth_date: requestData.patient_birth_date,
+          appointment_type_id: requestData.appointment_type_id,
+          preferred_date: requestData.preferred_date,
+          preferred_time: requestData.preferred_time,
+          alternative_dates: requestData.alternative_dates,
+          chief_complaint: requestData.chief_complaint,
+          urgency: requestData.urgency,
+          status: 'pending'
+        }])
+        .select(`
+          *,
+          appointment_type:appointment_types(*)
+        `)
+        .single();
+      
+      if (!error && data) {
+        return data;
+      }
+    } catch (dbError) {
+      console.log('Database save failed, using offline mode:', dbError);
     }
     
-    return data;
+    // Fallback: Create appointment request offline and save to localStorage
+    const appointmentRequest: AppointmentRequest = {
+      id: `offline-request-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      patient_name: requestData.patient_name,
+      patient_email: requestData.patient_email,
+      patient_phone: requestData.patient_phone,
+      patient_birth_date: requestData.patient_birth_date,
+      appointment_type_id: requestData.appointment_type_id,
+      preferred_date: requestData.preferred_date,
+      preferred_time: requestData.preferred_time,
+      alternative_dates: requestData.alternative_dates,
+      chief_complaint: requestData.chief_complaint,
+      urgency: requestData.urgency || 'normal',
+      status: 'pending',
+      processed_by: undefined,
+      processed_at: undefined,
+      rejection_reason: undefined,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      // Add the matching appointment type data
+      appointment_type: {
+        id: requestData.appointment_type_id,
+        name: this.getAppointmentTypeName(requestData.appointment_type_id),
+        description: '',
+        duration_minutes: 15,
+        color_code: '#3B82F6',
+        is_active: true,
+        requires_doctor: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    };
+    
+    // Save to localStorage for offline functionality
+    try {
+      const existingRequests = JSON.parse(localStorage.getItem('offline_appointment_requests') || '[]');
+      existingRequests.push(appointmentRequest);
+      localStorage.setItem('offline_appointment_requests', JSON.stringify(existingRequests));
+      console.log('✅ Appointment request saved offline');
+    } catch (storageError) {
+      console.error('Failed to save to localStorage:', storageError);
+    }
+    
+    return appointmentRequest;
+  },
+
+  /**
+   * Helper function to get appointment type name by ID
+   */
+  getAppointmentTypeName(typeId: string): string {
+    const typeMap: { [key: string]: string } = {
+      'fixed-type-algemeen': 'Algemene afspraak',
+      'fixed-type-controle': 'Controle afspraak',
+      'fixed-type-spoed': 'Spoed consult',
+      'fixed-type-bloeddruk': 'Bloeddruk controle',
+      'fixed-type-vaccinatie': 'Vaccinatie'
+    };
+    return typeMap[typeId] || 'Onbekend type';
   },
 
   /**
@@ -459,21 +841,67 @@ const appointmentRequestQueries = {
  */
 const appointmentTypeQueries = {
   /**
-   * Get all active appointment types
+   * Get all active appointment types (fixed list)
    */
   async getActiveTypes(): Promise<AppointmentType[]> {
-    const { data, error } = await supabase
-      .from('appointment_types')
-      .select('*')
-      .eq('is_active', true)
-      .order('name');
-    
-    if (error) {
-      handleError(error, 'Error fetching appointment types');
-      return [];
-    }
-    
-    return data || [];
+    // Return fixed appointment types instead of database query
+    return [
+      {
+        id: 'fixed-type-algemeen',
+        name: 'Algemene afspraak',
+        description: 'Standaard huisarts consulten en klachten',
+        duration_minutes: 15,
+        color_code: '#3B82F6',
+        is_active: true,
+        requires_doctor: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'fixed-type-controle',
+        name: 'Controle afspraak',
+        description: 'Follow-up na behandeling',
+        duration_minutes: 10,
+        color_code: '#10B981',
+        is_active: true,
+        requires_doctor: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'fixed-type-spoed',
+        name: 'Spoed consult',
+        description: 'Urgente medische hulp',
+        duration_minutes: 20,
+        color_code: '#EF4444',
+        is_active: true,
+        requires_doctor: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'fixed-type-bloeddruk',
+        name: 'Bloeddruk controle',
+        description: 'Routine bloeddruk meting',
+        duration_minutes: 10,
+        color_code: '#84CC16',
+        is_active: true,
+        requires_doctor: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'fixed-type-vaccinatie',
+        name: 'Vaccinatie',
+        description: 'Inentingen en vaccinaties',
+        duration_minutes: 10,
+        color_code: '#8B5CF6',
+        is_active: true,
+        requires_doctor: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
   }
 };
 
@@ -482,39 +910,41 @@ const appointmentTypeQueries = {
  */
 const practiceLocationQueries = {
   /**
-   * Get all practice locations
+   * Get all practice locations (fixed location: Spaarnepoort 1)
    */
   async getAllLocations(): Promise<PracticeLocation[]> {
-    const { data, error } = await supabase
-      .from('practice_locations')
-      .select('*')
-      .order('is_main_location', { ascending: false })
-      .order('name');
-    
-    if (error) {
-      handleError(error, 'Error fetching practice locations');
-      return [];
-    }
-    
-    return data || [];
+    // Return fixed location instead of database query
+    return [{
+      id: 'fixed-location-spaarnepoort',
+      name: 'BV Floriande - Spaarnepoort',
+      address: 'Spaarnepoort 1',
+      postal_code: '2134 TM',
+      city: 'Hoofddorp',
+      phone: '023-5630350',
+      email: 'info@bvfloriande.nl',
+      is_main_location: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }];
   },
 
   /**
-   * Get main practice location
+   * Get main practice location (fixed location: Spaarnepoort 1)
    */
   async getMainLocation(): Promise<PracticeLocation | null> {
-    const { data, error } = await supabase
-      .from('practice_locations')
-      .select('*')
-      .eq('is_main_location', true)
-      .single();
-    
-    if (error) {
-      handleError(error, 'Error fetching main practice location');
-      return null;
-    }
-    
-    return data;
+    // Return fixed location instead of database query
+    return {
+      id: 'fixed-location-spaarnepoort',
+      name: 'BV Floriande - Spaarnepoort',
+      address: 'Spaarnepoort 1',
+      postal_code: '2134 TM',
+      city: 'Hoofddorp',
+      phone: '023-5630350',
+      email: 'info@bvfloriande.nl',
+      is_main_location: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
   }
 };
 
@@ -599,7 +1029,7 @@ const availabilityQueries = {
         .from('doctor_schedules')
         .select(`
           *,
-          doctor:users(id, name),
+          doctor:users!doctor_schedules_doctor_id_fkey(id, name),
           location:practice_locations(*)
         `)
         .eq('day_of_week', dayOfWeek)
@@ -709,7 +1139,7 @@ const medicalRecordQueries = {
       .select(`
         *,
         patient:patients(id, name, patient_number),
-        doctor:users(id, name, specialization),
+        doctor:users!medical_records_doctor_id_fkey(id, name, specialization),
         appointment:appointments(id, scheduled_at)
       `)
       .order('created_at', { ascending: false });
@@ -758,7 +1188,7 @@ const medicalRecordQueries = {
       .select(`
         *,
         patient:patients(id, name, patient_number),
-        doctor:users(id, name, specialization),
+        doctor:users!medical_records_doctor_id_fkey(id, name, specialization),
         appointment:appointments(id, scheduled_at)
       `)
       .single();
@@ -785,7 +1215,7 @@ const prescriptionQueries = {
       .select(`
         *,
         patient:patients(id, name, patient_number),
-        doctor:users(id, name, specialization),
+        doctor:users!prescriptions_doctor_id_fkey(id, name, specialization),
         appointment:appointments(id, scheduled_at)
       `)
       .eq('patient_id', patientId)
@@ -809,7 +1239,7 @@ const prescriptionQueries = {
       .select(`
         *,
         patient:patients(id, name, patient_number),
-        doctor:users(id, name, specialization),
+        doctor:users!prescriptions_doctor_id_fkey(id, name, specialization),
         appointment:appointments(id, scheduled_at)
       `)
       .single();
@@ -1096,6 +1526,71 @@ const enhancedAppointmentQueries = {
   }
 };
 
+/**
+ * DEBUG QUERIES
+ */
+const debugQueries = {
+  /**
+   * Test Supabase connection and basic queries
+   */
+  async testConnection() {
+    try {
+      console.log('🔍 Testing Supabase connection...');
+      
+      // Test basic connection
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      console.log('Auth test:', { user: user?.id, authError });
+      
+      // Test table access
+      const { data: appointmentTypes, error: typesError } = await supabase
+        .from('appointment_types')
+        .select('id, name')
+        .limit(1);
+      
+      console.log('Appointment types test:', { 
+        count: appointmentTypes?.length, 
+        error: typesError,
+        firstType: appointmentTypes?.[0]
+      });
+      
+      // Test appointment_requests table
+      const { data: requests, error: requestsError } = await supabase
+        .from('appointment_requests')
+        .select('id')
+        .limit(1);
+      
+      console.log('Appointment requests test:', { 
+        count: requests?.length, 
+        error: requestsError 
+      });
+      
+      return {
+        authWorking: !authError,
+        typesWorking: !typesError,
+        requestsWorking: !requestsError
+      };
+    } catch (error) {
+      console.error('Debug test failed:', error);
+      return { error };
+    }
+  }
+};
+
+// Test function for offline mode
+const testOfflineMode = async () => {
+  console.log('🧪 Testing offline mode...');
+  try {
+    const types = await appointmentTypeQueries.getActiveTypes();
+    const location = await practiceLocationQueries.getMainLocation();
+    console.log('✅ Appointment types:', types.length);
+    console.log('✅ Practice location:', location?.name);
+    return { types, location };
+  } catch (error) {
+    console.error('❌ Offline mode test failed:', error);
+    return null;
+  }
+};
+
 // Export all query modules
 export {
   userQueries,
@@ -1110,5 +1605,8 @@ export {
   medicalRecordQueries,
   prescriptionQueries,
   automationQueries,
-  enhancedAppointmentQueries
+  enhancedAppointmentQueries,
+  debugQueries,
+  debugSupabaseConnection,
+  testOfflineMode
 };

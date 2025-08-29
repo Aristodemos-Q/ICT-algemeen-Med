@@ -1,52 +1,32 @@
-/*
- * MedCheck+ Medical Practice Portal
- * © 2025 qdela. All rights reserved.
- * 
- * API Route: Practice Locations
- * Public endpoint for fetching practice locations
- */
-
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseServer } from '@/lib/supabaseServer';
 
-// Use service role for API operations to bypass RLS
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
+// Required for static export
+export const dynamic = 'force-static';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    // Get practice locations
-    const { data: locations, error: locationsError } = await supabase
+    const { data: locations, error } = await supabaseServer
       .from('practice_locations')
       .select('*')
-      .order('is_main_location', { ascending: false })
       .order('name');
-
-    if (locationsError) {
-      console.error('Database error:', locationsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch practice locations' },
-        { status: 500 }
-      );
+    
+    if (error) {
+      console.error('Error fetching practice locations:', error);
+      throw error;
     }
-
+    
     return NextResponse.json({
       success: true,
       data: locations || []
     });
-
   } catch (error) {
-    console.error('API error:', error);
+    console.error('Error fetching practice locations:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        success: false, 
+        error: 'Failed to fetch practice locations' 
+      },
       { status: 500 }
     );
   }

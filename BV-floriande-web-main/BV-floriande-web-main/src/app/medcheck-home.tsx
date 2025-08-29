@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Calendar, Clock, Phone, MapPin, Users, Stethoscope, FileText } from 'lucide-react';
-import { locationQueries, appointmentTypeQueries } from '@/lib/medcheck-queries';
+import { practiceLocationQueries, appointmentTypeQueries } from '@/lib/medcheck-queries';
 import { PracticeLocation, AppointmentType } from '@/lib/medcheck-types';
 
 export default function HomePage() {
@@ -25,8 +25,8 @@ export default function HomePage() {
     async function loadPracticeInfo() {
       try {
         const [location, types] = await Promise.all([
-          locationQueries.getMainLocation(),
-          appointmentTypeQueries.getActiveAppointmentTypes()
+          practiceLocationQueries.getMainLocation(),
+          appointmentTypeQueries.getActiveTypes()
         ]);
         
         setPracticeInfo(location);

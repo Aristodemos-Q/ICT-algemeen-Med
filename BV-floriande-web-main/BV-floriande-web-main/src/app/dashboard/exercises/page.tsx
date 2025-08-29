@@ -208,7 +208,10 @@ export default function ExercisesPage() {
       if (error) throw error;
 
       toast.success('Oefening succesvol verwijderd');
-      loadExercises();
+      // Herlaad exercises
+      const fetchedExercises = await exerciseService.getAllExercises();
+      setExercises(fetchedExercises);
+      setPendingExercises(fetchedExercises);
     } catch (error) {
       console.error('Error deleting exercise:', error);
       toast.error('Fout bij verwijderen van oefening');
@@ -532,16 +535,18 @@ export default function ExercisesPage() {
                       </td>
                       <td className="py-2 px-4 border">
                         {/* Fix button accessibility */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteExercise(exercise.id)}
-                          className="h-6 w-6 p-0"
-                          aria-label={`Verwijder oefening ${exercise.name}`}
-                          title={`Verwijder oefening ${exercise.name}`}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                        {exercise && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteExercise(exercise.id)}
+                            className="h-6 w-6 p-0"
+                            aria-label={`Verwijder oefening ${exercise.name}`}
+                            title={`Verwijder oefening ${exercise.name}`}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   );

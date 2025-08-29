@@ -1,0 +1,28 @@
+1:"$Sreact.fragment"
+2:I[2046,["4982","static/chunks/4982-2bfe3b1bf0c201f5.js","7177","static/chunks/app/layout-72d63749b5f00be2.js"],"default"]
+3:I[7906,["4982","static/chunks/4982-2bfe3b1bf0c201f5.js","7177","static/chunks/app/layout-72d63749b5f00be2.js"],"default"]
+4:I[1362,["4982","static/chunks/4982-2bfe3b1bf0c201f5.js","7177","static/chunks/app/layout-72d63749b5f00be2.js"],"ThemeProvider"]
+5:I[6982,["4982","static/chunks/4982-2bfe3b1bf0c201f5.js","7177","static/chunks/app/layout-72d63749b5f00be2.js"],"ToastProvider"]
+6:I[1090,["4982","static/chunks/4982-2bfe3b1bf0c201f5.js","7177","static/chunks/app/layout-72d63749b5f00be2.js"],"AuthProvider"]
+7:I[229,["4982","static/chunks/4982-2bfe3b1bf0c201f5.js","7177","static/chunks/app/layout-72d63749b5f00be2.js"],"SettingsProvider"]
+8:I[7555,[],""]
+9:I[1295,[],""]
+a:I[894,[],"ClientPageRoot"]
+b:I[3202,["1778","static/chunks/1778-bed832f347d5559c.js","9037","static/chunks/9037-7c306daf69b12e22.js","5648","static/chunks/app/diensten/preventieve-zorg/page-abc0a8d552e083e6.js"],"default"]
+e:I[9665,[],"OutletBoundary"]
+11:I[4911,[],"AsyncMetadataOutlet"]
+13:I[9665,[],"ViewportBoundary"]
+15:I[9665,[],"MetadataBoundary"]
+17:I[6614,[],""]
+:HL["/_next/static/css/5261f66cd7373b71.css","style"]
+0:{"P":null,"b":"UCnkcgK2C6bbJ5v-3DC-3","p":"","c":["","diensten","preventieve-zorg",""],"i":false,"f":[[["",{"children":["diensten",{"children":["preventieve-zorg",{"children":["__PAGE__",{}]}]}]},"$undefined","$undefined",true],["",["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/5261f66cd7373b71.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]],["$","html",null,{"lang":"nl","suppressHydrationWarning":true,"children":["$","body",null,{"className":"__className_e8ce0c","suppressHydrationWarning":true,"children":["$","$L2",null,{"children":["$","$L3",null,{"children":["$","$L4",null,{"attribute":"class","defaultTheme":"light","enableSystem":true,"disableTransitionOnChange":true,"children":["$","$L5",null,{"children":["$","$L6",null,{"children":["$","$L7",null,{"children":["$","$L8",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L9",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}]}]}]}]}]}]}]}]]}],{"children":["diensten",["$","$1","c",{"children":[null,["$","$L8",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L9",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],{"children":["preventieve-zorg",["$","$1","c",{"children":[null,["$","$L8",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L9",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],{"children":["__PAGE__",["$","$1","c",{"children":[["$","$La",null,{"Component":"$b","searchParams":{},"params":{},"promises":["$@c","$@d"]}],null,["$","$Le",null,{"children":["$Lf","$L10",["$","$L11",null,{"promise":"$@12"}]]}]]}],{},null,false]},null,false]},null,false]},null,false],["$","$1","h",{"children":[null,["$","$1","YwehL9LGcqMzuHSkff7fjv",{"children":[["$","$L13",null,{"children":"$L14"}],null]}],["$","$L15",null,{"children":"$L16"}]]}],false]],"m":"$undefined","G":["$17","$undefined"],"s":false,"S":true}
+18:"$Sreact.suspense"
+19:I[4911,[],"AsyncMetadata"]
+c:{}
+d:{}
+16:["$","div",null,{"hidden":true,"children":["$","$18",null,{"fallback":null,"children":["$","$L19",null,{"promise":"$@1a"}]}]}]
+10:null
+14:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+f:null
+12:{"metadata":[["$","title","0",{"children":"MedCheck+"}],["$","meta","1",{"name":"description","content":"Medische praktijk management portaal voor patiënten, artsen en assistentes om afspraken en medische gegevens te beheren."}],["$","link","2",{"rel":"icon","href":"/favicon.ico","type":"image/x-icon","sizes":"16x16"}]],"error":null,"digest":"$undefined"}
+1a:{"metadata":"$12:metadata","error":null,"digest":"$undefined"}

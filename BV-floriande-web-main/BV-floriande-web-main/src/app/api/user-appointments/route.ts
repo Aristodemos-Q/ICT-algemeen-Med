@@ -6,16 +6,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseServer } from '@/lib/supabaseServer';
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error('Missing Supabase environment variables');
-}
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+// Required for static export
+export const dynamic = 'force-static';
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,7 +26,7 @@ export async function GET(request: NextRequest) {
     let requestsError: any = null;
 
     if (userId) {
-      const result = await supabase
+      const result = await supabaseServer
         .from('appointment_requests')
         .select(`
           id,
@@ -55,7 +49,7 @@ export async function GET(request: NextRequest) {
 
     // If no results with patient_id and we have an email, try by email
     if ((!appointmentRequests || appointmentRequests.length === 0) && userEmail) {
-      const result = await supabase
+      const result = await supabaseServer
         .from('appointment_requests')
         .select(`
           id,

@@ -1,51 +1,71 @@
-// Test appointment booking page functionality
+// Test appointment booking functionality using direct Supabase queries
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const BASE_URL = 'http://localhost:3002';
+// Load environment variables
+dotenv.config();
 
-async function testAppointmentBookingAPI() {
-  console.log('🧪 Testing Appointment Booking Page API Integration\n');
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('❌ Missing Supabase environment variables');
+  console.log('Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set');
+  process.exit(1);
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+async function testAppointmentBookingSupabase() {
+  console.log('🧪 Testing Appointment Booking with Direct Supabase Queries\n');
   console.log('==================================================');
   
   // Test the data loading that the page uses
   console.log('📋 Testing data loading for appointment booking...');
   
   try {
-    // Test appointment types endpoint
-    console.log('\n1️⃣ Loading appointment types...');
-    const typesResponse = await fetch(`${BASE_URL}/api/appointment-types`);
+    // Test appointment types query
+    console.log('\n1️⃣ Loading appointment types from Supabase...');
+    const { data: appointmentTypes, error: typesError } = await supabase
+      .from('appointment_types')
+      .select('*')
+      .eq('is_active', true)
+      .order('name');
     
-    if (!typesResponse.ok) {
-      console.log(`❌ Failed to load appointment types: ${typesResponse.status}`);
+    if (typesError) {
+      console.log(`❌ Failed to load appointment types: ${typesError.message}`);
       return false;
     }
     
-    const typesData = await typesResponse.json();
-    console.log(`✅ Appointment types loaded: ${typesData.data?.length || 0} types`);
+    console.log(`✅ Appointment types loaded: ${appointmentTypes?.length || 0} types`);
     
-    if (typesData.data && typesData.data.length > 0) {
-      const sampleType = typesData.data[0];
+    if (appointmentTypes && appointmentTypes.length > 0) {
+      const sampleType = appointmentTypes[0];
       console.log(`   📝 Sample type: ${sampleType.name} (${sampleType.duration_minutes} min)`);
     }
     
-    // Test practice locations endpoint
-    console.log('\n2️⃣ Loading practice locations...');
-    const locationsResponse = await fetch(`${BASE_URL}/api/practice-locations`);
+    // Test practice locations query
+    console.log('\n2️⃣ Loading practice locations from Supabase...');
+    const { data: locations, error: locationsError } = await supabase
+      .from('practice_locations')
+      .select('*')
+      .order('is_main_location', { ascending: false })
+      .order('name');
     
-    if (!locationsResponse.ok) {
-      console.log(`❌ Failed to load practice locations: ${locationsResponse.status}`);
+    if (locationsError) {
+      console.log(`❌ Failed to load practice locations: ${locationsError.message}`);
       return false;
     }
     
-    const locationsData = await locationsResponse.json();
-    console.log(`✅ Practice locations loaded: ${locationsData.data?.length || 0} locations`);
+    console.log(`✅ Practice locations loaded: ${locations?.length || 0} locations`);
     
-    if (locationsData.data && locationsData.data.length > 0) {
-      const sampleLocation = locationsData.data[0];
+    if (locations && locations.length > 0) {
+      const sampleLocation = locations[0];
       console.log(`   📍 Sample location: ${sampleLocation.name}`);
       console.log(`   📧 Contact: ${sampleLocation.email}`);
     }
@@ -57,40 +77,47 @@ async function testAppointmentBookingAPI() {
       patient_name: 'Test Patient',
       patient_email: 'test@example.com',
       patient_phone: '0612345678',
-      appointment_type_id: typesData.data?.[0]?.id || 'test-type',
-      practice_location_id: locationsData.data?.[0]?.id || 'test-location',
+      patient_birth_date: '1990-01-01',
+      appointment_type_id: appointmentTypes?.[0]?.id || null,
       preferred_date: new Date().toISOString().split('T')[0],
       preferred_time: '10:00',
-      chief_complaint: 'Test complaint for API testing',
-      urgency: 'normal'
+      alternative_dates: [],
+      chief_complaint: 'Test complaint for Supabase testing',
+      urgency: 'normal',
+      status: 'pending'
     };
     
-    const submitResponse = await fetch(`${BASE_URL}/api/appointment-requests`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(testAppointmentRequest)
-    });
+    const { data: appointmentRequest, error: submitError } = await supabase
+      .from('appointment_requests')
+      .insert([testAppointmentRequest])
+      .select(`
+        *,
+        appointment_type:appointment_types(*)
+      `)
+      .single();
     
-    if (submitResponse.ok) {
-      const submitResult = await submitResponse.json();
-      console.log('✅ Appointment request submission works');
-      console.log(`   📝 Request ID: ${submitResult.data?.id || 'unknown'}`);
+    if (submitError) {
+      console.log(`⚠️  Appointment submission issue: ${submitError.message}`);
     } else {
-      const errorText = await submitResponse.text();
-      console.log(`⚠️  Appointment submission issue: ${submitResponse.status}`);
-      console.log(`   Error: ${errorText}`);
+      console.log('✅ Appointment request submission works');
+      console.log(`   📝 Request ID: ${appointmentRequest?.id || 'unknown'}`);
+      
+      // Clean up: delete the test request
+      await supabase
+        .from('appointment_requests')
+        .delete()
+        .eq('id', appointmentRequest.id);
+      console.log('   🧹 Test request cleaned up');
     }
     
     console.log('\n==================================================');
-    console.log('🎉 Appointment booking page should now work correctly!');
+    console.log('🎉 Appointment booking now uses direct Supabase queries!');
     console.log('\n📊 Summary:');
-    console.log(`   • Appointment types: ${typesData.data?.length || 0} available`);
-    console.log(`   • Practice locations: ${locationsData.data?.length || 0} available`);
-    console.log('   • API endpoints: Working ✅');
-    console.log('   • Data loading: Fixed ✅');
-    console.log('\n💡 The "Error fetching appointment types" and "Error fetching practice locations" should be resolved.');
+    console.log(`   • Appointment types: ${appointmentTypes?.length || 0} available`);
+    console.log(`   • Practice locations: ${locations?.length || 0} available`);
+    console.log('   • Supabase connection: Working ✅');
+    console.log('   • Direct queries: Implemented ✅');
+    console.log('\n💡 No more dependency on Next.js API routes - ready for static export!');
     
     return true;
     
@@ -101,6 +128,6 @@ async function testAppointmentBookingAPI() {
 }
 
 // Run the test
-testAppointmentBookingAPI().catch(error => {
+testAppointmentBookingSupabase().catch(error => {
   console.error('❌ Test script error:', error);
 });

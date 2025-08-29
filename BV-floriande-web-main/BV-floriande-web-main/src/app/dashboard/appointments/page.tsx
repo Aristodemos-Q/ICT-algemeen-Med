@@ -31,6 +31,7 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { appointmentQueries, appointmentRequestQueries } from '@/lib/medcheck-queries';
 
 interface PatientAppointment {
   id: string;
@@ -87,24 +88,40 @@ export default function PatientAppointmentsPage() {
         return;
       }
 
-      // Fetch appointments and requests from API
-      const params = new URLSearchParams();
-      if (user.id) params.append('userId', user.id);
-      if (user.email) params.append('userEmail', user.email);
-      
-      const response = await fetch(`/api/user-appointments?${params.toString()}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch appointments: ${response.status}`);
-      }
+      // Use the enhanced getAppointments function that includes offline data
+      try {
+        console.log('📋 Loading appointments (including offline data)...');
+        const appointmentsData = await appointmentQueries.getAppointments();
+        
+        // Filter appointments for current user by email
+        const userAppointments = appointmentsData.filter((apt: any) => 
+          apt.patient?.email === user.email || 
+          apt.id.startsWith('offline_') // Include all offline appointments for now
+        );
 
-      const data = await response.json();
-      
-      if (data.success && data.appointments) {
-        setAppointments(data.appointments);
-      } else {
-        console.error('API returned error:', data.error);
-        // Fallback to mock data if API fails
+        // Convert to PatientAppointment format for display
+        const patientAppointments: PatientAppointment[] = userAppointments.map((apt: any) => ({
+          id: apt.id,
+          date: apt.scheduled_at ? new Date(apt.scheduled_at).toISOString().split('T')[0] : '',
+          time: apt.scheduled_at ? new Date(apt.scheduled_at).toTimeString().substring(0, 5) : '',
+          type: apt.appointment_type?.name || 'Onbekend type',
+          doctor_name: apt.doctor?.name || 'Nog niet toegewezen',
+          location: apt.location?.name || 'Spaarnepoort 1',
+          status: apt.status === 'scheduled' ? 'pending' : apt.status, // Map scheduled to pending for display
+          chief_complaint: apt.chief_complaint || '',
+          notes: apt.notes || '',
+          source: apt.id.startsWith('offline_') ? 'request' : 'appointment',
+          created_at: apt.created_at
+        }));
+
+        setAppointments(patientAppointments);
+        console.log(`✅ Loaded ${patientAppointments.length} appointments (${patientAppointments.filter(a => a.source === 'request').length} offline)`);
+        
+      } catch (queryError: any) {
+        console.error('Query failed:', queryError);
+        
+        // Fallback to mock data if query fails
+        console.log('Using fallback mock data due to database error');
         setAppointments(getMockAppointments());
       }
 
