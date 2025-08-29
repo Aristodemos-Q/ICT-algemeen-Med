@@ -74,31 +74,21 @@ const navigation = [
   },
 ];
 
-const adminNavigation = [
+const accountNavigation = [
   { 
-    name: 'Account Instellingen',
-    href: '/dashboard/settings', 
+    name: 'Mijn Account',
+    href: '/account', 
     icon: Settings,
-    description: 'Profiel beheren'
-  },
-  { 
-    name: 'Privacy',
-    href: '/dashboard/privacy', 
-    icon: Shield,
-    description: 'Privacy instellingen'
+    description: 'Profiel en instellingen beheren'
   },
 ];
 
 export function DashboardSidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
-    // Check if user has admin privileges (for settings access)
-  const hasAdminAccess = user?.user_metadata?.role === 'admin' || 
-                  user?.email === 'qdelarambelje@gmail.com' ||
-                  user?.email === 'admin@bvfloriande.nl';
 
-  // For patients, show additional settings options if they have admin access
-  const allNavigation = hasAdminAccess ? [...navigation, ...adminNavigation] : navigation;
+  // Eenvoudige navigatie zonder admin complexiteit
+  const allNavigation = [...navigation, ...accountNavigation];
 
   return (
     <div className="w-80 bg-white shadow-sm border-r min-h-screen">      {/* Logo */}

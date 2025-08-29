@@ -118,30 +118,30 @@ function AdminDashboardComponent() {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        // Load users (mock data for now)
-        const mockUsers: AdminUser[] = [
-          {
-            id: '1',
-            name: 'Jan Trainer',
-            email: 'jan@bvfloriande.nl',
-            role: 'trainer',
-            status: 'active',
-            last_login: '2025-01-20T10:30:00Z',
-            created_at: '2024-09-01T00:00:00Z',
-            groups_assigned: 3
-          },
-          {
-            id: '2',
-            name: 'Q Delarambelje',
-            email: 'qdelarambelje@gmail.com',
-            role: 'admin',
-            status: 'active',
-            last_login: '2025-01-20T12:00:00Z',
-            created_at: '2024-08-01T00:00:00Z',
-            groups_assigned: 0
-          }
-        ];
-        setUsers(mockUsers);
+        // Load users from database
+        const { data: usersData, error: usersError } = await supabase
+          .from('users')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (usersError) {
+          console.error('Error loading users:', usersError);
+          // Fallback to empty array if error
+          setUsers([]);
+        } else {
+          // Transform database users to AdminUser format
+          const adminUsers: AdminUser[] = (usersData || []).map(user => ({
+            id: user.id,
+            name: user.name || 'Geen naam',
+            email: user.email,
+            role: user.role,
+            status: user.status || 'active',
+            last_login: user.last_sign_in_at || 'Nooit',
+            created_at: user.created_at,
+            groups_assigned: 0 // TODO: Count from groups_trainers table
+          }));
+          setUsers(adminUsers);
+        }
 
         // Load registration requests
         const { data: requests } = await supabase
@@ -271,31 +271,76 @@ function AdminDashboardComponent() {
     try {
       console.log('Creating user:', newUser);
       
-      const createdUser: AdminUser = {
-        id: Date.now().toString(),
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-        status: 'active',
-        last_login: 'Nooit',
-        created_at: new Date().toISOString(),
-        groups_assigned: 0
-      };
+      // Valideer input
+      if (!newUser.name || !newUser.email || !newUser.password) {
+        alert('Alle velden zijn verplicht');
+        return;
+      }
       
-      setUsers([...users, createdUser]);
-      setNewUser({ name: '', email: '', role: 'trainer', password: '' });
-      setShowAddUser(false);
+      if (newUser.password.length < 8) {
+        alert('Wachtwoord moet minimaal 8 tekens lang zijn');
+        return;
+      }
+      
+      // Maak nieuwe user aan via Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email: newUser.email,
+        password: newUser.password,
+        options: {
+          data: {
+            name: newUser.name,
+            role: newUser.role
+          }
+        }
+      });
+      
+      if (error) {
+        console.error('Error creating user:', error);
+        alert(`Fout bij het aanmaken van gebruiker: ${error.message}`);
+        return;
+      }
+      
+      if (data.user) {
+        // Voeg de nieuwe user toe aan de lokale state
+        const createdUser: AdminUser = {
+          id: data.user.id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
+          status: 'active',
+          last_login: 'Nooit',
+          created_at: new Date().toISOString(),
+          groups_assigned: 0
+        };
+        
+        setUsers([...users, createdUser]);
+        setNewUser({ name: '', email: '', role: 'trainer', password: '' });
+        setShowAddUser(false);
+        
+        alert(`Gebruiker ${newUser.name} is succesvol aangemaakt!`);
+      }
     } catch (error) {
       console.error('Error creating user:', error);
+      alert(`Er ging iets mis bij het aanmaken van de gebruiker: ${error}`);
     }
   };
 
   const handleDeleteUser = async (userId: string, userName: string) => {
     if (confirm(`Weet je zeker dat je ${userName} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.`)) {
       try {
-        // TODO: Implement actual deletion via Supabase
-        // await supabase.from('users').delete().eq('id', userId);
+        // Verwijder user uit de users tabel (dit triggert ook de auth.users verwijdering)
+        const { error } = await supabase
+          .from('users')
+          .delete()
+          .eq('id', userId);
         
+        if (error) {
+          console.error('Error deleting user:', error);
+          alert(`Fout bij het verwijderen van gebruiker: ${error.message}`);
+          return;
+        }
+        
+        // Update lokale state
         setUsers(users.filter(u => u.id !== userId));
         alert(`${userName} is succesvol verwijderd.`);
       } catch (error) {

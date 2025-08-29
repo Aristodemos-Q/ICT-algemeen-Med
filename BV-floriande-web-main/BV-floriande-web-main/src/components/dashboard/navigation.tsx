@@ -18,13 +18,11 @@ import {
   Users,
   CheckCircle,
   Settings,
-  Shield,
-  MapPin
+  MapPin,
+  User
 } from 'lucide-react';
 
-// Deze component wordt nu vervangen door DashboardSidebar
-// Maar we houden de navigatie items voor backward compatibility
-
+// Eenvoudige navigatie zonder admin complexiteit
 const navigation = [
   { 
     name: 'Oefeningen', 
@@ -62,34 +60,22 @@ const navigation = [
     icon: MapPin,
     description: 'Bekijk beschikbare trainingslocaties'
   },
-];
-
-const adminNavigation = [
   { 
-    name: 'Admin Dashboard',
-    href: '/dashboard/admin', 
-    icon: Shield,
-    description: 'Gebruikersbeheer en systeeminstellingen'
+    name: 'Mijn Account',
+    href: '/account',
+    icon: User,
+    description: 'Beheer je accountinstellingen'
   },
 ];
 
 export function Navigation() {
   const pathname = usePathname();
-  const { user } = useAuth();
   
-  // Check if user is admin
-  const isAdmin = user?.user_metadata?.role === 'admin' || 
-                  user?.email === 'qdelarambelje@gmail.com' ||
-                  user?.email === 'admin@bvfloriande.nl';
-
-  // Combine navigation items
-  const allNavigation = isAdmin ? [...navigation, ...adminNavigation] : navigation;
-
   return (
     <nav className="bg-primary text-white shadow-lg border-b">
       <div className="container mx-auto px-4">
         <div className="flex space-x-6">
-          {allNavigation.map((item) => {
+          {navigation.map((item) => {
             const isActive = pathname === item.href || 
               (item.href !== '/dashboard' && pathname.startsWith(item.href));
             

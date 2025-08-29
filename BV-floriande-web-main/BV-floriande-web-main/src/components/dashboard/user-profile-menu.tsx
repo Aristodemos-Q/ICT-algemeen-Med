@@ -30,7 +30,7 @@ export default function UserProfileMenu() {
   useEffect(() => {
     if (user) {
       setUserName(user.user_metadata?.name || 'Gebruiker');
-      setUserRole(user.user_metadata?.role === 'admin' ? 'Beheerder' : 'Trainer');
+      setUserRole('Gebruiker'); // Eenvoudige rol zonder admin complexiteit
     }
   }, [user]);
 
@@ -62,15 +62,9 @@ export default function UserProfileMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/dashboard/profile" className="cursor-pointer flex w-full">
+          <Link href="/account" className="cursor-pointer flex w-full">
             <User className="mr-2 h-4 w-4" />
-            <span>Profiel</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/dashboard/settings" className="cursor-pointer flex w-full">
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Instellingen</span>
+            <span>Mijn Account</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
