@@ -85,16 +85,12 @@ export default function HomePage() {
               <CardContent>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span>Maandag - Donderdag</span>
-                    <span>08:00 - 17:00</span>
+                    <span>24/7 Beschikbaar</span>
+                    <span>00:00 - 23:59</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Vrijdag</span>
-                    <span>08:00 - 16:00</span>
-                  </div>
-                  <div className="flex justify-between text-red-600">
-                    <span>Weekend</span>
-                    <span>Gesloten</span>
+                  <div className="flex justify-between text-green-600">
+                    <span>Alle dagen</span>
+                    <span>Open</span>
                   </div>
                 </div>
               </CardContent>
@@ -111,17 +107,17 @@ export default function HomePage() {
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2 text-sm">
                   <Phone className="h-4 w-4 text-gray-500" />
-                  <span>010-1234567</span>
+                  <span>023-5630350</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Mail className="h-4 w-4 text-gray-500" />
-                  <span>info@medcheckplus.nl</span>
+                  <span>info@medcheck.nl</span>
                 </div>
                 <div className="flex items-start gap-2 text-sm">
                   <MapPin className="h-4 w-4 text-gray-500 mt-0.5" />
                   <div>
-                    <p>Gezondheidsstraat 123</p>
-                    <p>1234 AB Medstad</p>
+                    <p>Spaarnepoort 1</p>
+                    <p>2134 TM Hoofddorp</p>
                   </div>
                 </div>
               </CardContent>
@@ -351,9 +347,9 @@ export default function HomePage() {
                     </Link>
                   </Button>
                   <Button asChild size="lg" variant="outline">
-                    <Link href="tel:010-1234567">
+                    <Link href="tel:023-5630350">
                       <Phone className="h-5 w-5 mr-2" />
-                      Bel: 010-1234567
+                      Bel: 023-5630350
                     </Link>
                   </Button>
                 </div>

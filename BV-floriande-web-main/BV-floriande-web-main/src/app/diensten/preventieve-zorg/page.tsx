@@ -260,10 +260,10 @@ export default function PreventieveZorgPage() {
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2 text-sm">
                   <Phone className="h-4 w-4 text-gray-500" />
-                  <span>010-1234567</span>
+                  <span>023-5630350</span>
                 </div>
                 <Button asChild variant="outline" className="w-full">
-                  <Link href="tel:010-1234567">
+                  <Link href="tel:023-5630350">
                     <Phone className="h-4 w-4 mr-2" />
                     Direct Bellen
                   </Link>

@@ -199,8 +199,8 @@ CREATE TABLE public.doctor_schedules (
 
 -- Insert sample data
 INSERT INTO public.practice_locations (name, address, postal_code, city, phone, email, is_main_location, opening_hours, facilities) VALUES
-('Huisartsenpraktijk MedCheck+', 'Gezondheidsstraat 123', '1234 AB', 'Medstad', '010-1234567', 'info@medcheckplus.nl', true, 
- '{"monday": {"open": "08:00", "close": "17:00"}, "tuesday": {"open": "08:00", "close": "17:00"}, "wednesday": {"open": "08:00", "close": "17:00"}, "thursday": {"open": "08:00", "close": "17:00"}, "friday": {"open": "08:00", "close": "16:00"}}',
+('MedCheck+', 'Spaarnepoort 1', '2134 TM', 'Hoofddorp', '023-5630350', 'info@medcheck.nl', true, 
+ '{"maandag": {"open": "00:00", "close": "23:59"}, "dinsdag": {"open": "00:00", "close": "23:59"}, "woensdag": {"open": "00:00", "close": "23:59"}, "donderdag": {"open": "00:00", "close": "23:59"}, "vrijdag": {"open": "00:00", "close": "23:59"}, "zaterdag": {"open": "00:00", "close": "23:59"}, "zondag": {"open": "00:00", "close": "23:59"}}',
  ARRAY['Digitale radiologie', 'ECG', 'Spirometrie', 'Kleine chirurgie']);
 
 INSERT INTO public.appointment_types (name, description, duration_minutes, price, requires_doctor, color_code) VALUES

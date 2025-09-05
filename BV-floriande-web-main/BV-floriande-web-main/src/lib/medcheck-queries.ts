@@ -916,12 +916,21 @@ const practiceLocationQueries = {
     // Return fixed location instead of database query
     return [{
       id: 'fixed-location-spaarnepoort',
-      name: 'BV Floriande - Spaarnepoort',
+      name: 'MedCheck+',
       address: 'Spaarnepoort 1',
       postal_code: '2134 TM',
       city: 'Hoofddorp',
       phone: '023-5630350',
-      email: 'info@bvfloriande.nl',
+      email: 'info@medcheck.nl',
+      opening_hours: {
+        maandag: { open: '00:00', close: '23:59' },
+        dinsdag: { open: '00:00', close: '23:59' },
+        woensdag: { open: '00:00', close: '23:59' },
+        donderdag: { open: '00:00', close: '23:59' },
+        vrijdag: { open: '00:00', close: '23:59' },
+        zaterdag: { open: '00:00', close: '23:59' },
+        zondag: { open: '00:00', close: '23:59' }
+      },
       is_main_location: true,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -935,12 +944,21 @@ const practiceLocationQueries = {
     // Return fixed location instead of database query
     return {
       id: 'fixed-location-spaarnepoort',
-      name: 'BV Floriande - Spaarnepoort',
+      name: 'MedCheck+',
       address: 'Spaarnepoort 1',
       postal_code: '2134 TM',
       city: 'Hoofddorp',
       phone: '023-5630350',
-      email: 'info@bvfloriande.nl',
+      email: 'info@medcheck.nl',
+      opening_hours: {
+        maandag: { open: '00:00', close: '23:59' },
+        dinsdag: { open: '00:00', close: '23:59' },
+        woensdag: { open: '00:00', close: '23:59' },
+        donderdag: { open: '00:00', close: '23:59' },
+        vrijdag: { open: '00:00', close: '23:59' },
+        zaterdag: { open: '00:00', close: '23:59' },
+        zondag: { open: '00:00', close: '23:59' }
+      },
       is_main_location: true,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()

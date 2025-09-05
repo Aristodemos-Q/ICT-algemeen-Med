@@ -130,14 +130,14 @@ ON public.appointment_requests FOR INSERT WITH CHECK (true);
 -- Insert sample data
 INSERT INTO public.practice_locations (name, address, postal_code, city, phone, email, is_main_location, opening_hours) 
 VALUES (
-    'MedCheck+ Huisartsenpraktijk',
-    'SpaarnePoort 5',
+    'MedCheck+',
+    'Spaarnepoort 1',
     '2134 TM',
     'Hoofddorp',
-    '023-555-0123',
-    'info@medcheckplus.nl',
+    '023-5630350',
+    'info@medcheck.nl',
     true,
-    '{"monday": {"open": "08:00", "close": "17:00"}, "tuesday": {"open": "08:00", "close": "17:00"}, "wednesday": {"open": "08:00", "close": "17:00"}, "thursday": {"open": "08:00", "close": "17:00"}, "friday": {"open": "08:00", "close": "16:00"}, "saturday": {"open": "09:00", "close": "12:00"}, "sunday": {"open": "Gesloten", "close": "Gesloten"}}'::jsonb
+    '{"maandag": {"open": "00:00", "close": "23:59"}, "dinsdag": {"open": "00:00", "close": "23:59"}, "woensdag": {"open": "00:00", "close": "23:59"}, "donderdag": {"open": "00:00", "close": "23:59"}, "vrijdag": {"open": "00:00", "close": "23:59"}, "zaterdag": {"open": "00:00", "close": "23:59"}, "zondag": {"open": "00:00", "close": "23:59"}}'::jsonb
 ) ON CONFLICT DO NOTHING;
 
 INSERT INTO public.appointment_types (name, description, duration_minutes, price, requires_doctor, color_code) VALUES
