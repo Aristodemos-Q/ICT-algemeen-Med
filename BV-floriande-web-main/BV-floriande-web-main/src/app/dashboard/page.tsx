@@ -28,7 +28,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { appointmentQueries } from '@/lib/medcheck-queries';
 import Link from 'next/link';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
 interface PatientStats {
@@ -69,6 +69,21 @@ export default function PatientDashboard() {
   const [recentActivity, setRecentActivity] = useState<PatientActivity[]>([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState<UpcomingAppointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Safe date formatting function
+  const formatSafeDate = (dateString: string, formatPattern: string = 'dd MMMM yyyy'): string => {
+    if (!dateString) return 'Onbekende datum';
+    
+    const date = new Date(dateString);
+    if (!isValid(date)) return 'Ongeldige datum';
+    
+    try {
+      return format(date, formatPattern, { locale: nl });
+    } catch (error) {
+      console.warn('Date formatting error:', error, 'for date:', dateString);
+      return 'Datum fout';
+    }
+  };
 
   useEffect(() => {
     loadPatientData();
@@ -136,7 +151,7 @@ export default function PatientDashboard() {
             realActivity.push({
               id: `apt_${apt.id}`,
               type: 'appointment_confirmed',
-              message: `Afspraak ${apt.type} gepland voor ${format(new Date(apt.date), 'dd MMMM', { locale: nl })} om ${apt.time}`,
+              message: `Afspraak ${apt.type} gepland voor ${formatSafeDate(apt.date, 'dd MMMM')} om ${apt.time}`,
               timestamp: new Date(Date.now() - (index + 1) * 60 * 60 * 1000).toISOString(),
             });
           }
@@ -306,7 +321,7 @@ export default function PatientDashboard() {
                 <div key={appointment.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="text-sm font-medium text-blue-600">
-                      {format(new Date(appointment.date), 'dd MMM', { locale: nl })}
+                      {formatSafeDate(appointment.date, 'dd MMM')}
                       <br />
                       {appointment.time}
                     </div>
@@ -360,7 +375,7 @@ export default function PatientDashboard() {
                         {activity.message}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {format(new Date(activity.timestamp), 'dd MMM HH:mm', { locale: nl })}
+                        {formatSafeDate(activity.timestamp, 'dd MMM HH:mm')}
                       </p>
                     </div>
                     {activity.urgent && (

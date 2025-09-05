@@ -51,8 +51,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {  const [us
         const { data: { session }, error } = await authService.supabase.auth.getSession();
         
         if (error) {
-          console.error('Error getting session:', error);
-          setError('Failed to initialize authentication');
+          // Handle AuthSessionMissingError gracefully during initialization
+          if (error.message?.includes('Auth session missing')) {
+            console.warn('No session found during initialization, user needs to login');
+            if (mounted) {
+              setUser(null);
+            }
+          } else {
+            console.error('Error getting session:', error);
+            setError('Failed to initialize authentication');
+          }
         } else {
           if (mounted) {
             setUser(session?.user ?? null);
@@ -61,7 +69,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {  const [us
       } catch (error) {
         console.error('Error initializing auth:', error);
         if (mounted) {
-          setError('Failed to initialize authentication');
+          // Don't set error for missing session during init
+          if (error instanceof Error && !error.message.includes('Auth session missing')) {
+            setError('Failed to initialize authentication');
+          } else {
+            setUser(null);
+          }
         }
       } finally {
         if (mounted) {
@@ -76,10 +89,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {  const [us
     const { data: { subscription } } = authService.supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔄 Auth state change:', { event, hasUser: !!session?.user, userEmail: session?.user?.email });
+        
         if (mounted) {
           setUser(session?.user ?? null);
           setLoading(false); // Set loading to false after user state is updated
-            // Handle redirects based on auth state
+          
+          // Handle redirects based on auth state
           if (event === 'SIGNED_IN' && session?.user) {
             console.log('✅ SIGNED_IN event - checking for redirect');
             // Only redirect to dashboard if no custom redirect is planned
@@ -95,7 +110,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {  const [us
             }, 300);
           } else if (event === 'SIGNED_OUT') {
             console.log('🚪 SIGNED_OUT event - redirecting to login');
+            setUser(null); // Ensure user is cleared
             router.push('/login');
+          } else if (event === 'TOKEN_REFRESHED') {
+            console.log('🔄 Token refreshed successfully');
+          } else if (event === 'USER_UPDATED') {
+            console.log('👤 User updated');
           }
         }
       }
@@ -193,11 +213,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {  const [us
   const logout = async () => {
     try {
       setError(null);
+      
+      // Try to sign out, but don't throw error if session is already missing
       const { error } = await authService.supabase.auth.signOut();
-      if (error) throw error;
+      
+      // Only throw error if it's not related to missing session
+      if (error && !error.message?.includes('Auth session missing')) {
+        throw error;
+      }
+      
+      // Always clear user state and redirect, even if signOut failed
       setUser(null);
       router.push('/login');
     } catch (err) {
+      // Handle AuthSessionMissingError gracefully
+      if (err instanceof Error && err.message.includes('Auth session missing')) {
+        console.warn('Session already missing during logout, proceeding with cleanup');
+        setUser(null);
+        router.push('/login');
+        return; // Don't throw error for missing session
+      }
+      
       const errorMessage = err instanceof Error ? err.message : 'Logout failed';
       setError(errorMessage);
       throw err;

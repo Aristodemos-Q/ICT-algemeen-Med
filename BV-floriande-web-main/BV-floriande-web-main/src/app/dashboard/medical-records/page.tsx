@@ -30,7 +30,7 @@ import {
   CheckCircle,
   XCircle
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { useAuth } from '@/context/AuthContext';
 
@@ -88,7 +88,7 @@ interface Allergy {
 }
 
 export default function MedicalRecordsPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [patientInfo, setPatientInfo] = useState<PatientInfo | null>(null);
   const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
   const [vitalSigns, setVitalSigns] = useState<VitalSigns[]>([]);
@@ -96,9 +96,54 @@ export default function MedicalRecordsPage() {
   const [allergies, setAllergies] = useState<Allergy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Early return if auth is still loading or no user
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-secondary/10 to-primary/10">
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Authenticatie controleren...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-secondary/10 to-primary/10">
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Doorsturen naar login...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Safe date formatting function
+  const formatSafeDate = (dateString: string, formatPattern: string = 'dd MMMM yyyy'): string => {
+    if (!dateString) return 'Onbekende datum';
+    
+    const date = new Date(dateString);
+    if (!isValid(date)) return 'Ongeldige datum';
+    
+    try {
+      return format(date, formatPattern, { locale: nl });
+    } catch (error) {
+      console.warn('Date formatting error:', error, 'for date:', dateString);
+      return 'Datum fout';
+    }
+  };
+
   useEffect(() => {
-    loadMedicalData();
-  }, []);
+    // Only load data if user is authenticated
+    if (user) {
+      loadMedicalData();
+    }
+  }, [user]);
 
   const loadMedicalData = async () => {
     try {
@@ -242,7 +287,7 @@ export default function MedicalRecordsPage() {
                 <div className="mt-2 space-y-2 text-sm">
                   <p><strong>Naam:</strong> {patientInfo.name}</p>
                   <p><strong>Patiëntnummer:</strong> {patientInfo.patient_number}</p>
-                  <p><strong>Geboortedatum:</strong> {format(new Date(patientInfo.birth_date), 'd MMMM yyyy', { locale: nl })}</p>
+                  <p><strong>Geboortedatum:</strong> {formatSafeDate(patientInfo.birth_date, 'd MMMM yyyy')}</p>
                   <p><strong>Leeftijd:</strong> {new Date().getFullYear() - new Date(patientInfo.birth_date).getFullYear()} jaar</p>
                 </div>
               </div>
@@ -311,7 +356,7 @@ export default function MedicalRecordsPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <div className="text-sm font-medium text-gray-600">
-                            {format(new Date(record.date), 'dd MMM yyyy', { locale: nl })}
+                            {formatSafeDate(record.date, 'dd MMM yyyy')}
                           </div>
                           <Badge className={getRecordTypeColor(record.type)}>
                             <div className="flex items-center gap-1">
@@ -374,7 +419,7 @@ export default function MedicalRecordsPage() {
                   <div key={index} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="font-medium">
-                        {format(new Date(vital.date), 'dd MMMM yyyy', { locale: nl })}
+                        {formatSafeDate(vital.date)}
                       </h3>
                       <Badge variant="outline">
                         <Heart className="h-3 w-3 mr-1" />
@@ -463,9 +508,9 @@ export default function MedicalRecordsPage() {
                             <p><strong>Voorgeschreven door:</strong> {medication.prescribing_doctor}</p>
                           </div>
                           <div>
-                            <p><strong>Start datum:</strong> {format(new Date(medication.start_date), 'd MMM yyyy', { locale: nl })}</p>
+                            <p><strong>Start datum:</strong> {formatSafeDate(medication.start_date, 'd MMM yyyy')}</p>
                             {medication.end_date && (
-                              <p><strong>Eind datum:</strong> {format(new Date(medication.end_date), 'd MMM yyyy', { locale: nl })}</p>
+                              <p><strong>Eind datum:</strong> {formatSafeDate(medication.end_date, 'd MMM yyyy')}</p>
                             )}
                           </div>
                         </div>
@@ -515,7 +560,7 @@ export default function MedicalRecordsPage() {
                           </p>
                           
                           <p className="text-xs text-red-600">
-                            <strong>Ontdekt op:</strong> {format(new Date(allergy.date_discovered), 'd MMMM yyyy', { locale: nl })}
+                            <strong>Ontdekt op:</strong> {formatSafeDate(allergy.date_discovered, 'd MMMM yyyy')}
                           </p>
                         </div>
                         

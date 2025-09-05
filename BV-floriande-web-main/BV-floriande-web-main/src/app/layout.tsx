@@ -18,6 +18,8 @@ import { SettingsProvider } from "@/contexts/settings-context";
 import { ToastProvider } from "@/components/ui/toast";
 import ChunkErrorBoundary from "@/components/chunk-error-boundary";
 import ChunkLoadingBootstrapLite from "@/components/chunk-loading-bootstrap-lite";
+import { AuthErrorBoundary } from "@/components/auth/auth-error-boundary";
+import { GlobalErrorHandler } from "@/components/global-error-handler";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -44,11 +46,14 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <ToastProvider>
-                <AuthProvider>
-                  <SettingsProvider>
-                    {children}
-                  </SettingsProvider>
-                </AuthProvider>
+                <AuthErrorBoundary>
+                  <AuthProvider>
+                    <SettingsProvider>
+                      <GlobalErrorHandler />
+                      {children}
+                    </SettingsProvider>
+                  </AuthProvider>
+                </AuthErrorBoundary>
               </ToastProvider>
             </ThemeProvider>
           </ChunkLoadingBootstrapLite>

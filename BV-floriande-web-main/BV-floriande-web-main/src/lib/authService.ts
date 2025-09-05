@@ -72,9 +72,19 @@ export const authService = {
    * Log de huidige gebruiker uit
    */
   async signOut() {
-    const { error } = await supabase.auth.signOut();
-    
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      // Don't throw error if session is already missing
+      if (error && !error.message?.includes('Auth session missing')) {
+        throw error;
+      }
+    } catch (error) {
+      // Handle AuthSessionMissingError gracefully
+      if (error instanceof Error && error.message.includes('Auth session missing')) {
+        console.warn('Session already missing during signOut, continuing...');
+        return; // Don't throw for missing session
+      }
       throw error;
     }
   },

@@ -81,7 +81,8 @@ export const supabase = createClient(
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      debug: false // Disable auth debugging to reduce console noise
+      debug: false, // Disable auth debugging to reduce console noise
+      flowType: 'pkce' // Use PKCE flow for better security
     },
     global: {
       headers: {
@@ -116,6 +117,19 @@ export const supabase = createClient(
           // Handle common network errors
           if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
             throw new Error('Network connection failed. Please check your internet connection and try again.');
+          }
+          
+          // Handle auth session errors gracefully
+          if (error instanceof Error && error.message.includes('Auth session missing')) {
+            console.warn('Auth session missing, user may need to login again');
+            // Create a proper error response that won't crash the app
+            return new Response(JSON.stringify({ 
+              error: 'Auth session missing',
+              message: 'Please login again'
+            }), {
+              status: 401,
+              headers: { 'Content-Type': 'application/json' }
+            });
           }
           
           throw error;
