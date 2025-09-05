@@ -110,91 +110,55 @@ export default function PatientDashboard() {
         console.log(`✅ Dashboard loaded ${appointmentCount} upcoming appointments`);
         
       } catch (appointmentError) {
-        console.warn('Failed to load real appointments, using fallback:', appointmentError);
+        console.warn('Failed to load real appointments, showing empty state for new account:', appointmentError);
         
-        // Fallback to mock data if appointments can't be loaded
-        realAppointments = [
-          { 
-            id: '1', 
-            date: '2025-06-28', 
-            time: '14:30', 
-            type: 'Controle afspraak', 
-            doctor_name: 'Dr. A. Huisarts',
-            location: 'Spreekkamer 1',
-            status: 'confirmed' 
-          },
-          { 
-            id: '2', 
-            date: '2025-07-05', 
-            time: '10:15', 
-            type: 'Bloeddruk meting', 
-            doctor_name: 'Verpleegkundige B. Zorg',
-            location: 'Behandelkamer 2',
-            status: 'scheduled' 
-          }
-        ];
-        appointmentCount = realAppointments.length;
+        // No fallback appointments - show empty state for new accounts  
+        realAppointments = [];
+        appointmentCount = 0;
       }
       
-      // Stats with real appointment count
+      // Stats with real data - only show data for logged in users
       const stats: PatientStats = {
         upcomingAppointments: appointmentCount,
-        activeMedications: 3,
-        lastCheckupDays: 5,
-        unreadMessages: 1,
-        pendingResults: 1
+        activeMedications: 0, // No mock data - show real data only
+        lastCheckupDays: 0,   // No mock data - show real data only
+        unreadMessages: 0,    // No mock data - show real data only
+        pendingResults: 0     // No mock data - show real data only
       };
 
-      const mockActivity: PatientActivity[] = [
-        {
-          id: '1',
-          type: 'appointment_confirmed',
-          message: 'Afspraak bevestigd voor vrijdag 28 juni om 14:30',
-          timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-        },
-        {
-          id: '2',
-          type: 'test_result',
-          message: 'Bloedonderzoek resultaten zijn beschikbaar',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          urgent: false
-        },
-        {
-          id: '3',
-          type: 'prescription_ready',
-          message: 'Medicijn recept klaar voor ophalen bij apotheek',
-          timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          id: '4',
-          type: 'message_received',
-          message: 'Nieuw bericht van Dr. Huisarts ontvangen',
-          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          id: '5',
-          type: 'reminder',
-          message: 'Herinnering: Neem uw medicijnen vandaag',
-          timestamp: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString()
-        }
-      ];
+      // Activity with real data only - no mock entries for new accounts
+      const realActivity: PatientActivity[] = [];
+      
+      // Add real appointment confirmations to activity if user has appointments
+      if (realAppointments.length > 0) {
+        realAppointments.forEach((apt, index) => {
+          if (index < 3) { // Only show first 3 as recent activity
+            realActivity.push({
+              id: `apt_${apt.id}`,
+              type: 'appointment_confirmed',
+              message: `Afspraak ${apt.type} gepland voor ${format(new Date(apt.date), 'dd MMMM', { locale: nl })} om ${apt.time}`,
+              timestamp: new Date(Date.now() - (index + 1) * 60 * 60 * 1000).toISOString(),
+            });
+          }
+        });
+      }
 
       setStats(stats);
-      setRecentActivity(mockActivity);
+      setRecentActivity(realActivity);
       setUpcomingAppointments(realAppointments);
       
     } catch (error) {
       console.error('Error loading patient data:', error);
       
-      // Complete fallback
+      // Complete fallback - no mock data for new accounts
       setStats({
         upcomingAppointments: 0,
-        activeMedications: 3,
-        lastCheckupDays: 5,
-        unreadMessages: 1,
-        pendingResults: 1
+        activeMedications: 0,  // Show 0 for new accounts
+        lastCheckupDays: 0,    // Show 0 for new accounts  
+        unreadMessages: 0,     // Show 0 for new accounts
+        pendingResults: 0      // Show 0 for new accounts
       });
-      setRecentActivity([]);
+      setRecentActivity([]);   // Empty activity for new accounts
       setUpcomingAppointments([]);
     } finally {
       setIsLoading(false);

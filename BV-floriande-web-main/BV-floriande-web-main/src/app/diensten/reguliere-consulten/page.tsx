@@ -177,7 +177,7 @@ export default function ReguliereConsultenPage() {
                   Maak eenvoudig online een afspraak
                 </p>
                 <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100 w-full">
-                  <Link href="/appointment-booking">
+                  <Link href="/login?redirect=/appointment-booking">
                     <Calendar className="h-5 w-5 mr-2" />
                     Afspraak Maken
                   </Link>

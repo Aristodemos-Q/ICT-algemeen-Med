@@ -400,7 +400,7 @@ export default function IntakeNieuwePatiëntenPage() {
                   Start met uw intake-afspraak
                 </p>
                 <Button asChild size="lg" className="bg-white text-indigo-600 hover:bg-gray-100 w-full">
-                  <Link href="/appointment-booking">
+                  <Link href="/login?redirect=/appointment-booking">
                     <Calendar className="h-5 w-5 mr-2" />
                     Intake Inplannen
                   </Link>

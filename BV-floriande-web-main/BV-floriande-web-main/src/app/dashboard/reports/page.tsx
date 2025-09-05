@@ -77,83 +77,10 @@ export default function ReportsPage() {
     try {
       setIsLoading(true);
       
-      // Mock data voor test resultaten
-      const mockReports: TestResult[] = [
-        {
-          id: '1',
-          date: '2024-06-15',
-          type: 'blood',
-          name: 'Volledig Bloedbeeld',
-          description: 'Routine bloedonderzoek voor algemene gezondheidscheck',
-          status: 'normal',
-          doctor_name: 'Dr. Van der Berg',
-          results: [
-            {
-              parameter: 'Hemoglobine',
-              value: '14.2',
-              unit: 'g/dL',
-              reference_range: '12.0-15.5',
-              status: 'normal'
-            },
-            {
-              parameter: 'Witte bloedcellen',
-              value: '6.8',
-              unit: '10³/μL',
-              reference_range: '4.5-11.0',
-              status: 'normal'
-            },
-            {
-              parameter: 'Cholesterol',
-              value: '195',
-              unit: 'mg/dL',
-              reference_range: '<200',
-              status: 'normal'
-            }
-          ],
-          summary: 'Alle waarden binnen normale bereiken.',
-          recommendations: 'Continueer met gezonde levensstijl.'
-        },
-        {
-          id: '2',
-          date: '2024-05-28',
-          type: 'imaging',
-          name: 'Röntgen Thorax',
-          description: 'Controle longfoto na verkoudheid',
-          status: 'normal',
-          doctor_name: 'Dr. Jansen',
-          summary: 'Longen zien er helder uit, geen afwijkingen zichtbaar.',
-          recommendations: 'Geen verdere actie nodig.'
-        },
-        {
-          id: '3',
-          date: '2024-05-10',
-          type: 'blood',
-          name: 'Diabetes Screening',
-          description: 'HbA1c en glucose test',
-          status: 'abnormal',
-          doctor_name: 'Dr. Peters',
-          results: [
-            {
-              parameter: 'HbA1c',
-              value: '6.2',
-              unit: '%',
-              reference_range: '<5.7',
-              status: 'high'
-            },
-            {
-              parameter: 'Nuchtere glucose',
-              value: '108',
-              unit: 'mg/dL',
-              reference_range: '70-100',
-              status: 'high'
-            }
-          ],
-          summary: 'Licht verhoogde waarden suggereren prediabetes.',
-          recommendations: 'Levensstijlaanpassingen en follow-up over 3 maanden.'
-        }
-      ];
+      // Real data only - no mock test results for new accounts
+      const realReports: TestResult[] = [];
 
-      setReports(mockReports);
+      setReports(realReports);
     } catch (error) {
       console.error('Error loading test results:', error);
     } finally {

@@ -97,119 +97,12 @@ export default function MedicationsPage() {
     try {
       setIsLoading(true);
       
-      // Mock data voor demonstratie
-      const mockMedications: Medication[] = [
-        {
-          id: '1',
-          name: 'Lisinopril',
-          generic_name: 'Lisinopril',
-          dosage: '10mg',
-          frequency: '1x daags',
-          frequency_times: ['08:00'],
-          start_date: '2025-05-20',
-          prescribing_doctor: 'Dr. A. Huisarts',
-          status: 'active',
-          instructions: 'Innemen \'s ochtends met water, bij voorkeur op hetzelfde tijdstip elke dag.',
-          side_effects: ['Droge hoest', 'Duizeligheid', 'Hoofdpijn'],
-          food_instructions: 'Kan met of zonder voedsel worden ingenomen',
-          purpose: 'Behandeling van hoge bloeddruk',
-          refills_remaining: 3,
-          pharmacy_info: 'Apotheek De Gezondheid - Tel: 020-1234567',
-          last_taken: '2025-06-24T08:00:00',
-          next_dose: '2025-06-25T08:00:00'
-        },
-        {
-          id: '2',
-          name: 'Metformine',
-          generic_name: 'Metformin HCl',
-          dosage: '500mg',
-          frequency: '2x daags',
-          frequency_times: ['08:00', '18:00'],
-          start_date: '2025-01-15',
-          prescribing_doctor: 'Dr. B. Internist',
-          status: 'active',
-          instructions: 'Innemen tijdens of na de maaltijd om maagklachten te voorkomen.',
-          side_effects: ['Maagklachten', 'Diarree', 'Metallic smaak'],
-          food_instructions: 'Innemen tijdens of na de maaltijd',
-          purpose: 'Behandeling van diabetes type 2',
-          refills_remaining: 2,
-          pharmacy_info: 'Apotheek De Gezondheid - Tel: 020-1234567',
-          last_taken: '2025-06-24T18:00:00',
-          next_dose: '2025-06-25T08:00:00'
-        },
-        {
-          id: '3',
-          name: 'Ibuprofen',
-          generic_name: 'Ibuprofen',
-          dosage: '400mg',
-          frequency: 'Zo nodig, max 3x daags',
-          frequency_times: ['08:00', '14:00', '20:00'],
-          start_date: '2025-06-20',
-          end_date: '2025-06-30',
-          prescribing_doctor: 'Dr. A. Huisarts',
-          status: 'active',
-          instructions: 'Alleen bij pijn innemen. Niet langer dan 7 dagen gebruiken zonder overleg.',
-          side_effects: ['Maagpijn', 'Hoofdpijn', 'Duizeligheid'],
-          food_instructions: 'Innemen met voedsel om maagklachten te voorkomen',
-          purpose: 'Pijnstilling en ontstekingsremming',
-          refills_remaining: 0,
-          pharmacy_info: 'Apotheek De Gezondheid - Tel: 020-1234567'
-        },
-        {
-          id: '4',
-          name: 'Simvastatine',
-          generic_name: 'Simvastatin',
-          dosage: '20mg',
-          frequency: '1x daags \'s avonds',
-          frequency_times: ['22:00'],
-          start_date: '2025-03-10',
-          end_date: '2025-06-20',
-          prescribing_doctor: 'Dr. A. Huisarts',
-          status: 'completed',
-          instructions: 'Innemen \'s avonds, bij voorkeur op hetzelfde tijdstip.',
-          purpose: 'Verlaging van cholesterol',
-          refills_remaining: 0,
-          pharmacy_info: 'Apotheek De Gezondheid - Tel: 020-1234567'
-        }
-      ];
+      // Real data only - no mock data for new accounts
+      const realMedications: Medication[] = [];
+      const realReminders: MedicationReminder[] = [];
 
-      const mockReminders: MedicationReminder[] = [
-        {
-          id: '1',
-          medication_id: '1',
-          medication_name: 'Lisinopril 10mg',
-          time: '08:00',
-          taken: true,
-          date: format(new Date(), 'yyyy-MM-dd')
-        },
-        {
-          id: '2',
-          medication_id: '2',
-          medication_name: 'Metformine 500mg',
-          time: '08:00',
-          taken: true,
-          date: format(new Date(), 'yyyy-MM-dd')
-        },
-        {
-          id: '3',
-          medication_id: '2',
-          medication_name: 'Metformine 500mg',
-          time: '18:00',
-          taken: false,
-          date: format(new Date(), 'yyyy-MM-dd')
-        },
-        {
-          id: '4',
-          medication_id: '1',
-          medication_name: 'Lisinopril 10mg',
-          time: '08:00',
-          taken: false,
-          date: format(addDays(new Date(), 1), 'yyyy-MM-dd')
-        }
-      ];
-
-      setMedications(mockMedications);
-      setReminders(mockReminders);
+      setMedications(realMedications);
+      setReminders(realReminders);
     } catch (error) {
       console.error('Error loading medications:', error);
     } finally {

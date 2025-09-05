@@ -66,46 +66,10 @@ export default function HistoryPage() {
     try {
       setIsLoading(true);
       
-      // Mock data voor medische geschiedenis
-      const mockHistory: MedicalHistory[] = [
-        {
-          id: '1',
-          date: '2024-06-15',
-          type: 'consultation',
-          title: 'Algemene controle',
-          description: 'Jaarlijkse gezondheidscheck',
-          doctor_name: 'Dr. Van der Berg',
-          location: 'MedCheck+ Hoofdvestiging',
-          diagnosis: 'Algemene gezondheid goed',
-          treatment: 'Preventieve maatregelen besproken',
-          notes: 'Patiënt voelt zich goed, geen klachten'
-        },
-        {
-          id: '2',
-          date: '2024-05-20',
-          type: 'treatment',
-          title: 'Behandeling hoofdpijn',
-          description: 'Follow-up voor chronische hoofdpijn',
-          doctor_name: 'Dr. Jansen',
-          location: 'MedCheck+ Hoofdvestiging',
-          diagnosis: 'Spanningshoofdpijn',
-          treatment: 'Medicatie aangepast',
-          notes: 'Verbetering na vorige behandeling'
-        },
-        {
-          id: '3',
-          date: '2024-04-10',
-          type: 'checkup',
-          title: 'Bloedonderzoek',
-          description: 'Regulier bloedonderzoek',
-          doctor_name: 'Dr. Peters',
-          location: 'Laboratorium MedCheck+',
-          diagnosis: 'Alle waarden normaal',
-          treatment: 'Geen verdere actie nodig'
-        }
-      ];
+      // Real data only - no mock history for new accounts
+      const realHistory: MedicalHistory[] = [];
 
-      setHistory(mockHistory);
+      setHistory(realHistory);
     } catch (error) {
       console.error('Error loading medical history:', error);
     } finally {

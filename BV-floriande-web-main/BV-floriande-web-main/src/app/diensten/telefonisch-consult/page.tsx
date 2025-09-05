@@ -273,7 +273,7 @@ export default function TelefonischConsultPage() {
                   Snel en gemakkelijk een afspraak maken
                 </p>
                 <Button asChild size="lg" className="bg-white text-green-600 hover:bg-gray-100 w-full">
-                  <Link href="/appointment-booking">
+                  <Link href="/login?redirect=/appointment-booking">
                     <Phone className="h-5 w-5 mr-2" />
                     Afspraak Maken
                   </Link>

@@ -104,109 +104,30 @@ export default function MedicalRecordsPage() {
     try {
       setIsLoading(true);
       
-      // Mock data voor demonstratie
-      const mockPatientInfo: PatientInfo = {
-        id: '1',
-        name: user?.user_metadata?.name || 'John Doe',
-        email: user?.email || 'john@example.com',
-        phone: '06-12345678',
-        birth_date: '1985-03-15',
-        address: 'Voorbeeldstraat 123, 1234 AB Amsterdam',
-        emergency_contact: 'Jane Doe - 06-87654321 (Partner)',
-        insurance_info: 'Zilveren Kruis - Polis: ZK123456',
-        patient_number: 'P2025001'
+      // Real patient info based on user account
+      const realPatientInfo: PatientInfo = {
+        id: user?.id || '1',
+        name: user?.user_metadata?.name || 'Nieuwe Patiënt',
+        email: user?.email || '',
+        phone: '', // No mock data - only real data
+        birth_date: '', // No mock data - only real data
+        address: '', // No mock data - only real data
+        emergency_contact: '', // No mock data - only real data
+        insurance_info: '', // No mock data - only real data
+        patient_number: `P${new Date().getFullYear()}${Math.random().toString().slice(2, 8)}`
       };
 
-      const mockMedicalRecords: MedicalRecord[] = [
-        {
-          id: '1',
-          date: '2025-06-15',
-          type: 'consultation',
-          title: 'Algemene controle',
-          description: 'Routinecontrole - alles in orde. Bloeddruk stabiel, gewicht goed.',
-          doctor_name: 'Dr. A. Huisarts',
-          status: 'completed'
-        },
-        {
-          id: '2',
-          date: '2025-06-10',
-          type: 'lab_result',
-          title: 'Bloedonderzoek',
-          description: 'Volledig bloedbeeld, leverwaarden en cholesterol. Lichte verhoging cholesterol.',
-          doctor_name: 'Dr. A. Huisarts',
-          status: 'completed',
-          attachments: ['lab_results_20250610.pdf']
-        },
-        {
-          id: '3',
-          date: '2025-05-20',
-          type: 'prescription',
-          title: 'Medicatie voorschrift',
-          description: 'Voorschrift voor bloeddrukmedicatie - Lisinopril 10mg.',
-          doctor_name: 'Dr. A. Huisarts',
-          status: 'active'
-        }
-      ];
+      // Empty arrays for new accounts - no mock data
+      const realMedicalRecords: MedicalRecord[] = [];
+      const realVitalSigns: VitalSigns[] = [];
+      const realMedications: Medication[] = [];
+      const realAllergies: Allergy[] = [];
 
-      const mockVitalSigns: VitalSigns[] = [
-        {
-          date: '2025-06-15',
-          blood_pressure_systolic: 125,
-          blood_pressure_diastolic: 80,
-          heart_rate: 72,
-          weight: 75.5,
-          height: 180,
-          temperature: 36.7
-        },
-        {
-          date: '2025-05-15',
-          blood_pressure_systolic: 130,
-          blood_pressure_diastolic: 85,
-          heart_rate: 75,
-          weight: 76.0,
-          height: 180
-        }
-      ];
-
-      const mockMedications: Medication[] = [
-        {
-          id: '1',
-          name: 'Lisinopril',
-          dosage: '10mg',
-          frequency: '1x daags',
-          start_date: '2025-05-20',
-          prescribing_doctor: 'Dr. A. Huisarts',
-          status: 'active',
-          instructions: 'Innemen \'s ochtends met water, bij voorkeur op hetzelfde tijdstip.'
-        },
-        {
-          id: '2',
-          name: 'Ibuprofen',
-          dosage: '400mg',
-          frequency: 'Zo nodig, max 3x daags',
-          start_date: '2025-06-01',
-          end_date: '2025-06-15',
-          prescribing_doctor: 'Dr. A. Huisarts',
-          status: 'completed',
-          instructions: 'Bij pijn, innemen met voedsel om maagklachten te voorkomen.'
-        }
-      ];
-
-      const mockAllergies: Allergy[] = [
-        {
-          id: '1',
-          allergen: 'Penicilline',
-          reaction: 'Huiduitslag en jeuk',
-          severity: 'moderate',
-          date_discovered: '2020-03-10'
-        }
-      ];
-
-      setPatientInfo(mockPatientInfo);
-      setMedicalRecords(mockMedicalRecords);
-      setVitalSigns(mockVitalSigns);
-      setMedications(mockMedications);
-      setAllergies(mockAllergies);
+      setPatientInfo(realPatientInfo);
+      setMedicalRecords(realMedicalRecords);
+      setVitalSigns(realVitalSigns);
+      setMedications(realMedications);
+      setAllergies(realAllergies);
       
     } catch (error) {
       console.error('Error loading medical data:', error);

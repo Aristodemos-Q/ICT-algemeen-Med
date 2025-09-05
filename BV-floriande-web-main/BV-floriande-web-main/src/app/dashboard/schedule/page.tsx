@@ -57,54 +57,10 @@ export default function SchedulePage() {
         const startDate = format(startOfMonth(currentDate), 'yyyy-MM-dd');
         const endDate = format(endOfMonth(currentDate), 'yyyy-MM-dd');
         
-        // This would use real API calls to get session data with trainers and locations
-        const mockSessions: ScheduleSession[] = [
-          {
-            id: '1',
-            title: 'Jeugd Training A1',
-            date: '2025-01-27',
-            start_time: '18:00',
-            end_time: '19:30',
-            location: {
-              name: 'Sporthal De Floriande',
-              address: 'Floriandestraat 1, Hoofddorp'
-            },
-            group: {
-              id: 'group-1',
-              name: 'Jeugd A1',
-              level: 'Beginner'
-            },
-            trainers: [
-              { id: 'trainer-1', name: 'Jan Trainer' },
-              { id: 'trainer-2', name: 'Emma Coach' }
-            ],
-            participants_count: 12,
-            max_participants: 15
-          },
-          {
-            id: '2',
-            title: 'Senioren Training',
-            date: '2025-01-28',
-            start_time: '20:00',
-            end_time: '21:30',
-            location: {
-              name: 'Sporthal De Floriande',
-              address: 'Floriandestraat 1, Hoofddorp'
-            },
-            group: {
-              id: 'group-2',
-              name: 'Senioren',
-              level: 'Gevorderd'
-            },
-            trainers: [
-              { id: 'trainer-1', name: 'Jan Trainer' }
-            ],
-            participants_count: 8,
-            max_participants: 12
-          }
-        ];
+        // Real data only - no mock sessions for new accounts
+        const realSessions: ScheduleSession[] = [];
         
-        setSessions(mockSessions);
+        setSessions(realSessions);
       } catch (error) {
         console.error('Error loading schedule:', error);
       } finally {

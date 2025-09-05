@@ -120,69 +120,18 @@ export default function PatientAppointmentsPage() {
       } catch (queryError: any) {
         console.error('Query failed:', queryError);
         
-        // Fallback to mock data if query fails
-        console.log('Using fallback mock data due to database error');
-        setAppointments(getMockAppointments());
+        // No fallback mock data - show empty state for new accounts
+        console.log('No appointments found, showing empty state for new account');
+        setAppointments([]);
       }
 
     } catch (error) {
       console.error('Error loading appointments:', error);
-      // Fallback to mock data on error
-      setAppointments(getMockAppointments());
+      // No fallback mock data - show empty state for new accounts
+      setAppointments([]);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getMockAppointments = (): PatientAppointment[] => {
-    return [
-      {
-        id: '1',
-        date: '2025-06-28',
-        time: '14:30',
-        type: 'Controle afspraak',
-        doctor_name: 'Dr. A. Huisarts',
-        location: 'Spreekkamer 1',
-        status: 'confirmed',
-        chief_complaint: 'Routine controle',
-        notes: 'Bloeddruk en gewicht controleren',
-        source: 'appointment'
-      },
-      {
-        id: '2',
-        date: '2025-07-05',
-        time: '10:15',
-        type: 'Bloeddruk meting',
-        doctor_name: 'Nog niet toegewezen',
-        location: 'Behandelkamer 2',
-        status: 'pending',
-        chief_complaint: 'Bloeddruk controle na medicatie wijziging',
-        source: 'request'
-      },
-      {
-        id: '3',
-        date: '2025-06-15',
-        time: '09:00',
-        type: 'Lab uitslagen bespreking',
-        doctor_name: 'Dr. A. Huisarts',
-        location: 'Spreekkamer 1',
-        status: 'completed',
-        chief_complaint: 'Bespreking bloedonderzoek',
-        notes: 'Cholesterol iets verhoogd, dieet aanpassing besproken',
-        source: 'appointment'
-      },
-      {
-        id: '4',
-        date: '2025-08-02',
-        time: '15:45',
-        type: 'Jaarlijkse check-up',
-        doctor_name: 'Dr. A. Huisarts', 
-        location: 'Spreekkamer 1',
-        status: 'scheduled',
-        chief_complaint: 'Jaarlijkse algemene controle',
-        source: 'appointment'
-      }
-    ];
   };
 
   const getStatusColor = (status: string) => {

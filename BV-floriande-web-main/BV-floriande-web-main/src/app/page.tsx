@@ -61,12 +61,6 @@ export default function HomePage() {
                   </Link>
                 </Button>
                 <Button asChild className="w-full justify-start" variant="outline">
-                  <Link href="/dashboard/appointment-requests">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Verzoeken
-                  </Link>
-                </Button>
-                <Button asChild className="w-full justify-start" variant="outline">
                   <Link href="/login">
                     <Users className="h-4 w-4 mr-2" />
                     Inloggen

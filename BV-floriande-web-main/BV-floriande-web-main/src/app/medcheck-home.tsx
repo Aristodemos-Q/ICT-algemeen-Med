@@ -120,7 +120,7 @@ export default function HomePage() {
           
           <div className="text-center mt-8">
             <Button variant="outline" asChild>
-              <Link href="/appointment-booking">
+              <Link href="/login?redirect=/appointment-booking">
                 Alle diensten bekijken
               </Link>
             </Button>
@@ -186,7 +186,7 @@ export default function HomePage() {
                   U krijgt direct een bevestiging per e-mail.
                 </p>
                 <Button className="w-full bg-blue-600 hover:bg-blue-700" asChild>
-                  <Link href="/appointment-booking">
+                  <Link href="/login?redirect=/appointment-booking">
                     <Calendar className="w-5 h-5 mr-2" />
                     Afspraak maken
                   </Link>
@@ -266,7 +266,7 @@ export default function HomePage() {
               <h4 className="font-semibold mb-4">Snel</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <Link href="/appointment-booking" className="hover:text-white">
+                  <Link href="/login?redirect=/appointment-booking" className="hover:text-white">
                     Afspraak maken
                   </Link>
                 </li>
